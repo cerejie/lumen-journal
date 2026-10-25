@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowUpRight, CheckCircle2, ChevronRight, Dices, Inbox, Plus, RotateCcw, Trash2 } from 'lucide-react'
 import Celebrate from '../../components/Celebrate'
-import { Button, Card, FieldSheet, GLASS, Group, GroupLabel, PRESS, Sheet, SheetField, Toast, cx, useToast } from '../../components/ui'
+import { Button, Card, FieldSheet, GLASS, Group, GroupLabel, PRESS, Sheet, SheetField, Toast, cx, primeKeyboard, useToast } from '../../components/ui'
 import { DONE_MESSAGES, pick } from '../../lib/constants'
 import { dayKey } from '../../lib/time'
 
@@ -154,7 +154,10 @@ export default function FocusView({ tasks, actions }) {
         </button>
         <button
           type="button"
-          onClick={() => setCaptureOpen(true)}
+          onClick={() => {
+            primeKeyboard()
+            setCaptureOpen(true)
+          }}
           className="flex min-h-13 w-full items-center gap-3 px-4 text-left text-[15px] font-medium text-primary transition-all duration-300 ease-spring active:scale-[0.98] active:bg-black/5 dark:active:bg-white/5"
         >
           <Plus className="size-5" aria-hidden />

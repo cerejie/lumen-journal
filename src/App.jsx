@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import Ambient from './components/Ambient'
+import { primeKeyboard } from './components/ui'
 import BottomNav from './components/BottomNav'
 import PullIndicator from './components/PullIndicator'
 import Splash from './components/Splash'
@@ -112,6 +113,7 @@ export default function App() {
   )
 
   const openAddProof = () => {
+    primeKeyboard()
     setTab('proof')
     setProofSignal((n) => n + 1)
   }

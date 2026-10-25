@@ -13,6 +13,28 @@ export const cx = (...classes) => classes.filter(Boolean).join(' ')
  */
 export const OnBody = ({ children }) => createPortal(children, document.body)
 
+/**
+ * iOS only raises the keyboard when focus happens inside the tap itself. Call this from the click
+ * handler that opens a sheet: a hidden input takes focus now, and the sheet's field takes it over
+ * when it mounts, so the keyboard comes up together with the sheet.
+ */
+let keyboardProxy = null
+export function primeKeyboard() {
+  if (!window.matchMedia('(pointer: coarse)').matches) return
+  if (!keyboardProxy) {
+    keyboardProxy = document.createElement('input')
+    keyboardProxy.setAttribute('aria-hidden', 'true')
+    keyboardProxy.tabIndex = -1
+    keyboardProxy.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px;pointer-events:none;border:0;padding:0'
+    // Disabled while idle so the keyboard's previous/next arrows never jump into it.
+    keyboardProxy.disabled = true
+    keyboardProxy.addEventListener('blur', () => (keyboardProxy.disabled = true))
+    document.body.appendChild(keyboardProxy)
+  }
+  keyboardProxy.disabled = false
+  keyboardProxy.focus({ preventScroll: true })
+}
+
 /* ---------- Glass system ---------- */
 
 /** Frosted panel: main cards are rounded-3xl, sub-components rounded-2xl, chips rounded-full. */
@@ -108,7 +130,7 @@ export function Chip({ active, className, children, ...rest }) {
       type="button"
       aria-pressed={active}
       className={cx(
-        'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-medium backdrop-blur-xl',
+        'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-medium',
         active ? PILL_SELECTED : PILL_IDLE,
         PRESS,
         className
@@ -189,7 +211,7 @@ export function InputGroupButton({ className, children, ...props }) {
 
 /* ---------- Bottom sheet (TARTAR Sheet side="bottom") ---------- */
 
-export function Sheet({ open, onClose, title, labelFor, children }) {
+export function Sheet({ open, onClose, title, labelFor, action, children }) {
   useEffect(() => {
     if (!open) return
     const onKey = (e) => e.key === 'Escape' && onClose()
@@ -214,6 +236,11 @@ export function Sheet({ open, onClose, title, labelFor, children }) {
             role="dialog"
             aria-modal="true"
             aria-label={title}
+            // Tapping a button must not pull focus from the text field: that closes the keyboard, the sheet
+            // drops, and the tap lands somewhere else. Keep focus where it is; the click still fires.
+            onMouseDown={(e) => {
+              if (e.target.closest('button') && document.activeElement?.matches('input, textarea')) e.preventDefault()
+            }}
             className={cx(
               'absolute inset-x-0 bottom-(--keyboard-inset) mx-auto flex max-h-[calc(0.92*var(--visual-viewport-height))] max-w-xl flex-col',
               'rounded-t-[28px] border-t border-white/40 bg-white/80 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-8px_40px_rgba(0,0,0,0.18)] backdrop-blur-2xl in-data-keyboard-open:pb-0 dark:border-white/10 dark:bg-zinc-900/80'
@@ -230,6 +257,7 @@ export function Sheet({ open, onClose, title, labelFor, children }) {
                   <label htmlFor={labelFor} className="text-sm font-medium text-muted-foreground">
                     {title}
                   </label>
+                  {action && <span className="ml-auto">{action}</span>}
                   <button
                     type="button"
                     onClick={onClose}
@@ -251,7 +279,7 @@ export function Sheet({ open, onClose, title, labelFor, children }) {
 }
 
 /** Focus the sheet's input as soon as it mounts (keeps the keyboard up on iOS). */
-const focusOnOpen = (el) => {
+export const focusOnOpen = (el) => {
   if (!el) return
   el.focus({ preventScroll: true })
   requestAnimationFrame(() => {
@@ -417,6 +445,7 @@ export function SheetField({ id, label, value = '', placeholder, onCommit, multi
   const openSheet = () => {
     // Focus a hidden input inside the tap itself, so iOS raises the keyboard; the sheet input takes over.
     focusingProxy.current = true
+    if (proxyRef.current) proxyRef.current.disabled = false
     proxyRef.current?.focus({ preventScroll: true })
     focusingProxy.current = false
     setDraft(value)
@@ -429,6 +458,8 @@ export function SheetField({ id, label, value = '', placeholder, onCommit, multi
         ref={proxyRef}
         aria-hidden
         tabIndex={-1}
+        disabled
+        onBlur={(e) => (e.currentTarget.disabled = true)}
         className="pointer-events-none absolute top-0 left-0 size-px text-base opacity-0"
         onFocus={() => {
           if (!focusingProxy.current) triggerRef.current?.focus()

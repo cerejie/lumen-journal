@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Star, Trash2 } from 'lucide-react'
 import ProofCard from './ProofCard'
-import { Button, Chip, Group, GroupLabel, Input, Label, Sheet, Textarea, Toast, cx, useToast } from '../../components/ui'
+import { Button, Chip, Group, GroupLabel, Sheet, Textarea, Toast, cx, focusOnOpen, primeKeyboard, useToast } from '../../components/ui'
 import { EVIDENCE_KINDS, kindMeta } from '../../lib/constants'
 
 const shortDate = (ts) => new Date(ts).toLocaleDateString([], { month: 'short', day: 'numeric' })
@@ -13,15 +13,14 @@ export default function ProofView({ evidence, actions, addSignal, shuffle }) {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [kind, setKind] = useState('win')
   const [text, setText] = useState('')
-  const [detail, setDetail] = useState('')
   const [filter, setFilter] = useState('all')
   const [toast, setToast] = useToast()
   const firstSignal = useRef(addSignal)
 
   const openAdd = (k = 'win') => {
+    primeKeyboard()
     setKind(k)
     setText('')
-    setDetail('')
     setSheetOpen(true)
   }
 
@@ -33,7 +32,7 @@ export default function ProofView({ evidence, actions, addSignal, shuffle }) {
   const save = () => {
     const v = text.trim()
     if (!v) return
-    actions.addEvidence({ kind, text: v, detail: detail.trim() || null })
+    actions.addEvidence({ kind, text: v })
     setSheetOpen(false)
     setToast('Saved to your proof')
   }
@@ -117,8 +116,18 @@ export default function ProofView({ evidence, actions, addSignal, shuffle }) {
         </div>
       )}
 
-      <Sheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="Add proof" labelFor="proof-text">
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+      <Sheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        title="Add proof"
+        labelFor="proof-text"
+        action={
+          <Button size="sm" disabled={!text.trim()} onClick={save}>
+            Save
+          </Button>
+        }
+      >
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 py-1 [scrollbar-width:none]">
           {EVIDENCE_KINDS.map((k) => {
             const Icon = k.icon
             return (
@@ -129,29 +138,15 @@ export default function ProofView({ evidence, actions, addSignal, shuffle }) {
           })}
         </div>
         <Textarea
+          ref={focusOnOpen}
           id="proof-text"
-          autoFocus
           rows={3}
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={meta.prompt}
-          className="min-h-28 rounded-2xl border-2 border-primary px-4 py-3 focus-visible:border-primary focus-visible:ring-0"
+          enterKeyHint="done"
+          className="min-h-24 rounded-2xl border-2 border-primary px-4 py-3 focus-visible:border-primary focus-visible:ring-0 in-data-keyboard-open:min-h-20"
         />
-        <div className="flex flex-col gap-2 pt-1">
-          <Label htmlFor="proof-detail" className="text-muted-foreground">
-            {kind === 'praise' ? 'Who said it' : 'Context'} (optional)
-          </Label>
-          <Input
-            id="proof-detail"
-            value={detail}
-            onChange={(e) => setDetail(e.target.value)}
-            placeholder={kind === 'praise' ? 'My team lead' : 'Project, place or person'}
-            className="h-11 px-3"
-          />
-        </div>
-        <Button size="lg" className="mt-1 w-full" disabled={!text.trim()} onClick={save}>
-          Save
-        </Button>
       </Sheet>
     </div>
   )
