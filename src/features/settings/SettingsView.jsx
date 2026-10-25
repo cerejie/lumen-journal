@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Download, Laptop, Moon, Share, Smartphone, Sun, Trash2, Upload } from 'lucide-react'
-import { Group, GroupLabel, Toast, cx } from '../../components/ui'
+import { Group, GroupLabel, SheetField, Toast, cx, useToast } from '../../components/ui'
 import { useInstallPrompt } from '../../lib/pwa'
 
 const THEMES = [
@@ -9,16 +9,13 @@ const THEMES = [
   { id: 'dark', label: 'Dark', icon: Moon },
 ]
 
-export default function SettingsView({ settings, setSettings, exportData, importData, resetAll, accent }) {
+const ROW = 'flex min-h-13 w-full items-center gap-3 px-4 text-left text-[15px] font-medium transition-colors active:bg-muted'
+
+export default function SettingsView({ settings, setSettings, exportData, importData, resetAll }) {
   const install = useInstallPrompt()
   const fileRef = useRef(null)
   const [confirmReset, setConfirmReset] = useState(false)
-  const [toast, setToast] = useState(null)
-
-  const flash = (msg) => {
-    setToast(msg)
-    setTimeout(() => setToast(null), 2600)
-  }
+  const [toast, setToast] = useToast()
 
   const onExport = () => {
     const blob = new Blob([JSON.stringify(exportData(), null, 2)], { type: 'application/json' })
@@ -36,13 +33,11 @@ export default function SettingsView({ settings, setSettings, exportData, import
     if (!file) return
     try {
       importData(JSON.parse(await file.text()))
-      flash('Backup imported')
+      setToast('Backup imported')
     } catch {
-      flash('Import failed: choose a Lumen backup .json file')
+      setToast('Import failed: choose a Lumen backup file')
     }
   }
-
-  const row = 'flex min-h-12 w-full items-center gap-3 px-4 py-3 text-left text-[15px] transition active:bg-zinc-900/5 dark:active:bg-white/5'
 
   return (
     <div className="flex flex-col gap-6">
@@ -50,73 +45,76 @@ export default function SettingsView({ settings, setSettings, exportData, import
 
       <div>
         <GroupLabel>Your name</GroupLabel>
-        <Group>
-          <input
-            id="name"
-            aria-label="Your name"
-            value={settings.name}
-            onChange={(e) => setSettings((s) => ({ ...s, name: e.target.value.slice(0, 30) }))}
-            placeholder="Optional, used in greetings"
-            className="min-h-12 w-full bg-transparent px-4 py-3 text-base outline-none placeholder:text-zinc-400"
-          />
-        </Group>
+        <SheetField
+          id="name"
+          label="Your name"
+          value={settings.name}
+          placeholder="Used in greetings"
+          onCommit={(text) => {
+            setSettings((s) => ({ ...s, name: text.slice(0, 30) }))
+            setToast('Name saved')
+          }}
+        />
       </div>
 
       <div>
         <GroupLabel>Appearance</GroupLabel>
-        <div className="grid grid-cols-3 gap-1 rounded-2xl bg-zinc-900/5 p-1 dark:bg-white/5">
+        <div className="grid grid-cols-3 gap-1 rounded-lg bg-muted p-1" role="radiogroup" aria-label="Appearance">
           {THEMES.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               type="button"
-              aria-pressed={settings.theme === id}
+              role="radio"
+              aria-checked={settings.theme === id}
               onClick={() => setSettings((s) => ({ ...s, theme: id }))}
               className={cx(
-                'flex min-h-11 items-center justify-center gap-1.5 rounded-xl text-sm font-semibold transition active:scale-95',
-                settings.theme === id ? 'bg-white shadow-sm dark:bg-zinc-700' : 'text-zinc-500 dark:text-zinc-400'
+                'flex h-9 items-center justify-center gap-1.5 rounded-md text-sm font-medium transition-all',
+                settings.theme === id ? 'bg-panel text-foreground shadow-xs ring-1 ring-foreground/10' : 'text-muted-foreground'
               )}
             >
-              <Icon className="size-4" /> {label}
+              <Icon className="size-4" aria-hidden /> {label}
             </button>
           ))}
         </div>
       </div>
 
-      <div>
-        <GroupLabel>Home screen</GroupLabel>
-        <Group>
-          {install.installed ? (
-            <p className={row}>
-              <Smartphone className="size-4 text-zinc-500 dark:text-zinc-400" /> Installed on this device
-            </p>
-          ) : install.canInstall ? (
-            <button type="button" className={cx(row, 'font-semibold', accent.text)} onClick={install.promptInstall}>
-              <Smartphone className="size-4" /> Add to Home Screen
-            </button>
-          ) : install.isIOS ? (
-            <p className="px-4 py-3 text-[15px] leading-relaxed text-zinc-600 dark:text-zinc-300">
-              In Safari, tap <Share className="inline size-4 align-[-2px]" /> Share, then <strong>Add to Home Screen</strong>.
-            </p>
-          ) : (
-            <p className="px-4 py-3 text-[15px] leading-relaxed text-zinc-600 dark:text-zinc-300">
-              Open your browser menu and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.
-            </p>
-          )}
-        </Group>
-      </div>
+      {!install.installed && (
+        <div>
+          <GroupLabel>Home screen</GroupLabel>
+          <Group>
+            {install.canInstall ? (
+              <button type="button" className={cx(ROW, 'text-primary')} onClick={install.promptInstall}>
+                <Smartphone className="size-5" aria-hidden /> Add to Home Screen
+              </button>
+            ) : (
+              <p className="px-4 py-3.5 text-[15px] leading-relaxed text-muted-foreground">
+                {install.isIOS ? (
+                  <>
+                    In Safari, tap <Share className="inline size-4 align-[-2px]" aria-label="Share" /> then <span className="font-medium text-foreground">Add to Home Screen</span>.
+                  </>
+                ) : (
+                  <>
+                    Open the browser menu and choose <span className="font-medium text-foreground">Install app</span>.
+                  </>
+                )}
+              </p>
+            )}
+          </Group>
+        </div>
+      )}
 
       <div>
-        <GroupLabel>Your data</GroupLabel>
+        <GroupLabel>Data</GroupLabel>
         <Group>
-          <button type="button" className={row} onClick={onExport}>
-            <Download className="size-4 text-zinc-500 dark:text-zinc-400" /> Export backup
+          <button type="button" className={ROW} onClick={onExport}>
+            <Download className="size-5 text-muted-foreground" aria-hidden /> Export backup
           </button>
-          <button type="button" className={row} onClick={() => fileRef.current?.click()}>
-            <Upload className="size-4 text-zinc-500 dark:text-zinc-400" /> Import backup
+          <button type="button" className={ROW} onClick={() => fileRef.current?.click()}>
+            <Upload className="size-5 text-muted-foreground" aria-hidden /> Import backup
           </button>
           <button
             type="button"
-            className={cx(row, 'text-rose-600 dark:text-rose-400', confirmReset && 'font-semibold')}
+            className={cx(ROW, 'text-red-600 dark:text-red-400')}
             onClick={() => {
               if (!confirmReset) {
                 setConfirmReset(true)
@@ -125,15 +123,14 @@ export default function SettingsView({ settings, setSettings, exportData, import
               }
               resetAll()
               setConfirmReset(false)
-              flash('All data erased')
+              setToast('All data erased')
             }}
           >
-            <Trash2 className="size-4" /> {confirmReset ? 'Tap again to erase everything' : 'Erase all data'}
+            <Trash2 className="size-5" aria-hidden /> {confirmReset ? 'Tap again to erase everything' : 'Erase all data'}
           </button>
         </Group>
         <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={onImport} />
       </div>
-
     </div>
   )
 }

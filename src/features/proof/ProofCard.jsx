@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Plus, Shuffle } from 'lucide-react'
-import { cx } from '../../components/ui'
+import { Button } from '../../components/ui'
 import { kindMeta } from '../../lib/constants'
 import { dayKey } from '../../lib/time'
 
-/** Stable pick for the day; pinned items are twice as likely. */
+/** Stable pick for the day; starred items are twice as likely. */
 function dailyPick(items, seed, offset) {
   if (!items.length) return null
   const pool = items.flatMap((i) => (i.pinned ? [i, i] : [i]))
@@ -15,15 +15,20 @@ function dailyPick(items, seed, offset) {
 }
 
 const formatWhen = (ts) =>
-  new Date(ts).toLocaleDateString([], { month: 'long', day: 'numeric', year: new Date(ts).getFullYear() === new Date().getFullYear() ? undefined : 'numeric' })
+  new Date(ts).toLocaleDateString([], {
+    month: 'long',
+    day: 'numeric',
+    year: new Date(ts).getFullYear() === new Date().getFullYear() ? undefined : 'numeric',
+  })
 
-export default function ProofCard({ evidence, accent, onAdd }) {
+const SURFACE = 'rounded-xl bg-primary-soft p-5 ring-1 ring-primary/15'
+
+export default function ProofCard({ evidence, onAdd }) {
   const [offset, setOffset] = useState(0)
   const today = dayKey()
   const item = useMemo(() => dailyPick(evidence, today, offset), [evidence, today, offset])
 
   const another = () => {
-    // Step until we land on a different item (pinned items appear twice in the pool).
     let next = offset + 1
     for (let i = 0; i < 4 && evidence.length > 1 && dailyPick(evidence, today, next)?.id === item?.id; i++) next++
     setOffset(next)
@@ -31,15 +36,11 @@ export default function ProofCard({ evidence, accent, onAdd }) {
 
   if (!item) {
     return (
-      <section className={cx('rounded-3xl p-6', accent.soft)}>
-        <p className="font-proof text-[22px] leading-snug text-balance">Your doubts forget what you've done. This remembers.</p>
-        <button
-          type="button"
-          onClick={onAdd}
-          className={cx('mt-5 inline-flex min-h-11 items-center gap-2 rounded-2xl px-4 text-[15px] font-semibold transition active:scale-95', accent.solid)}
-        >
-          <Plus className="size-4" strokeWidth={2.5} /> Add proof
-        </button>
+      <section className={SURFACE}>
+        <p className="font-proof text-xl leading-snug text-balance">Your doubts forget what you've done. This remembers.</p>
+        <Button className="mt-4" onClick={onAdd}>
+          <Plus /> Add proof
+        </Button>
       </section>
     )
   }
@@ -48,7 +49,7 @@ export default function ProofCard({ evidence, accent, onAdd }) {
   const Icon = meta.icon
 
   return (
-    <section className={cx('rounded-3xl p-6', accent.soft)} aria-live="polite">
+    <section className={SURFACE} aria-live="polite">
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.div
           key={item.id}
@@ -57,31 +58,23 @@ export default function ProofCard({ evidence, accent, onAdd }) {
           exit={{ opacity: 0, transition: { duration: 0.08 } }}
           transition={{ duration: 0.2 }}
         >
-          <p className="flex items-center gap-1.5 text-[13px] font-semibold opacity-80">
-            <Icon className="size-3.5" strokeWidth={2.4} />
+          <p className="flex items-center gap-1.5 text-sm font-medium text-primary">
+            <Icon className="size-4" aria-hidden />
             {meta.label}, {formatWhen(item.createdAt)}
           </p>
-          <blockquote className="font-proof mt-2 text-[22px] leading-snug text-balance">{item.text}</blockquote>
-          {item.detail && <p className="mt-2 text-[15px] opacity-80">{item.detail}</p>}
+          <blockquote className="font-proof mt-2 text-xl leading-snug text-balance">{item.text}</blockquote>
+          {item.detail && <p className="mt-1.5 text-[15px] text-muted-foreground">{item.detail}</p>}
         </motion.div>
       </AnimatePresence>
-      <div className="mt-5 flex gap-2">
+      <div className="mt-4 flex gap-2">
         {evidence.length > 1 && (
-          <button
-            type="button"
-            onClick={another}
-            className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-white/60 px-4 text-[15px] font-semibold transition active:scale-95 dark:bg-white/10"
-          >
-            <Shuffle className="size-4" /> Another
-          </button>
+          <Button variant="outline" size="sm" onClick={another}>
+            <Shuffle /> Another
+          </Button>
         )}
-        <button
-          type="button"
-          onClick={onAdd}
-          className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-white/60 px-4 text-[15px] font-semibold transition active:scale-95 dark:bg-white/10"
-        >
-          <Plus className="size-4" strokeWidth={2.5} /> Add proof
-        </button>
+        <Button variant="outline" size="sm" onClick={onAdd}>
+          <Plus /> Add proof
+        </Button>
       </div>
     </section>
   )

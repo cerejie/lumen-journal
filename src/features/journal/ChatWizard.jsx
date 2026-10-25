@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowUp, Sparkles } from 'lucide-react'
-import { Button, OptionButton, cx } from '../../components/ui'
+import { Button, Chip, OptionButton, SheetField, cx } from '../../components/ui'
 
-const TYPING_MS = 550
+const TYPING_MS = 500
 
 function nextIndex(steps, from, answers, ctx) {
   for (let i = from; i < steps.length; i++) {
@@ -23,7 +22,7 @@ const resolve = (v, answers, ctx) => (typeof v === 'function' ? v(answers, ctx) 
  *  { id, type: 'custom', prompt, render: ({ answer, ctx, answers }) => JSX, when? }
  * onAnswer(value, ctx, answers) may return a replacement value to store.
  */
-export default function ChatWizard({ steps, ctx, accent, closing, onFinish, onClose }) {
+export default function ChatWizard({ steps, ctx, closing, onFinish, onClose }) {
   const answersRef = useRef({})
   const [messages, setMessages] = useState([])
   const [current, setCurrent] = useState(() => nextIndex(steps, 0, {}, ctx))
@@ -31,10 +30,8 @@ export default function ChatWizard({ steps, ctx, accent, closing, onFinish, onCl
   const [finished, setFinished] = useState(false)
   const endRef = useRef(null)
 
-  const push = (from, text) =>
-    setMessages((m) => [...m, { id: `${Date.now()}-${m.length}`, from, text }])
+  const push = (from, text) => setMessages((m) => [...m, { id: `${Date.now()}-${m.length}`, from, text }])
 
-  // Bot "types", then asks the current question.
   useEffect(() => {
     if (current === -1) return
     setTyping(true)
@@ -47,7 +44,6 @@ export default function ChatWizard({ steps, ctx, accent, closing, onFinish, onCl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current])
 
-  // Closing message after the last answer.
   useEffect(() => {
     if (!finished) return
     setTyping(true)
@@ -81,68 +77,72 @@ export default function ChatWizard({ steps, ctx, accent, closing, onFinish, onCl
   }
 
   const step = current === -1 ? null : steps[current]
-  const showInput = !typing && step
+  const lastBot = [...messages].reverse().find((m) => m.from === 'bot')?.text ?? ''
 
   return (
-    <div className="flex flex-col gap-3">
-      <AnimatePresence initial={false}>
-        {messages.map((m) => (
-          <motion.div
-            key={m.id}
-            initial={{ opacity: 0, y: 12, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-            className={cx('flex', m.from === 'me' ? 'justify-end' : 'justify-start')}
+    <div className="flex flex-col gap-2.5">
+      {messages.map((m) => (
+        <motion.div
+          key={m.id}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className={cx('flex', m.from === 'me' ? 'justify-end' : 'justify-start')}
+        >
+          <div
+            className={cx(
+              'max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[15px] leading-relaxed whitespace-pre-line',
+              m.from === 'me'
+                ? 'rounded-br-md bg-primary font-medium text-primary-foreground'
+                : 'rounded-bl-md bg-panel shadow-xs ring-1 ring-foreground/10'
+            )}
           >
-            <div
-              className={cx(
-                'max-w-[85%] whitespace-pre-line rounded-3xl px-4 py-3 text-[15px] leading-relaxed',
-                m.from === 'me'
-                  ? cx('rounded-br-lg font-medium', accent.solid)
-                  : 'rounded-bl-lg bg-white/90 backdrop-blur-md dark:bg-zinc-800/90'
-              )}
-            >
-              {m.text}
-            </div>
-          </motion.div>
-        ))}
-      </AnimatePresence>
+            {m.text}
+          </div>
+        </motion.div>
+      ))}
 
       {typing && <TypingDots />}
 
       <AnimatePresence mode="wait">
-        {showInput && (
+        {!typing && step && (
           <motion.div
             key={step.id}
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.22 }}
-            className="mt-2"
+            exit={{ opacity: 0, transition: { duration: 0.08 } }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="mt-3"
           >
-            <StepInput step={step} answer={answer} ctx={ctx} answers={answersRef.current} accent={accent} />
+            <StepInput step={step} answer={answer} ctx={ctx} answers={answersRef.current} prompt={lastBot} />
           </motion.div>
         )}
         {finished && !typing && (
-          <motion.div
-            key="done"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-2 flex justify-center"
-          >
-            <Button onClick={onClose} className="w-full">
-              <Sparkles className="size-4" /> All set
+          <motion.div key="done" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-3">
+            <Button className="w-full" onClick={onClose}>
+              Done
             </Button>
           </motion.div>
         )}
       </AnimatePresence>
-      <div ref={endRef} className="h-1" />
+      <div ref={endRef} className="h-px" />
     </div>
   )
 }
 
-function StepInput({ step, answer, ctx, answers, accent }) {
+function StepInput({ step, answer, ctx, answers, prompt }) {
+  const skip = step.skippable && (
+    <button
+      type="button"
+      onClick={() => answer(null, step.skipLabel ?? 'Skip for now')}
+      className="mx-auto mt-1 flex h-11 items-center rounded-lg px-4 text-sm font-medium text-muted-foreground active:bg-muted"
+    >
+      {step.skipLabel ?? 'Skip for now'}
+    </button>
+  )
+
   if (step.type === 'custom') return step.render({ answer, ctx, answers })
+
   if (step.type === 'choice') {
     return (
       <div className="flex flex-col gap-2">
@@ -156,97 +156,49 @@ function StepInput({ step, answer, ctx, answers, accent }) {
             />
           ))}
         </div>
-        {step.skippable && <SkipButton label={step.skipLabel} onClick={() => answer(null, step.skipLabel ?? 'Skip for now')} />}
+        {skip}
       </div>
     )
   }
-  return <TextReply step={step} answer={answer} accent={accent} />
-}
 
-function TextReply({ step, answer, accent }) {
-  const [value, setValue] = useState('')
-  const submit = () => {
-    const v = value.trim()
-    if (v) answer(v, v)
-  }
-  const Field = step.multiline ? 'textarea' : 'input'
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       {step.chips?.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {step.chips.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => answer(c, c)}
-              className={cx('min-h-10 rounded-full px-4 py-2 text-sm font-medium transition active:scale-95', accent.soft)}
-            >
+            <Chip key={c} onClick={() => answer(c, c)}>
               {c}
-            </button>
+            </Chip>
           ))}
         </div>
       )}
-      <div
-        className={cx(
-          'flex items-end gap-2 rounded-3xl border border-zinc-900/[0.08] bg-white p-2 pl-4 ring-4 ring-transparent transition',
-          'dark:border-white/10 dark:bg-zinc-900',
-          accent.ring
-        )}
-      >
-        <Field
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && (!step.multiline || e.metaKey || e.ctrlKey)) {
-              e.preventDefault()
-              submit()
-            }
-          }}
-          rows={step.multiline ? 3 : undefined}
-          placeholder={step.placeholder}
-          enterKeyHint="send"
-          className="max-h-48 min-h-10 flex-1 resize-none bg-transparent py-2 text-base outline-none placeholder:text-zinc-400"
-        />
-        <button
-          type="button"
-          onClick={submit}
-          disabled={!value.trim()}
-          aria-label="Send"
-          className={cx('grid size-10 shrink-0 place-items-center rounded-full transition active:scale-90 disabled:opacity-30', accent.solid)}
-        >
-          <ArrowUp className="size-5" strokeWidth={2.5} />
-        </button>
-      </div>
-      {step.skippable && <SkipButton label={step.skipLabel} onClick={() => answer(null, step.skipLabel ?? 'Skip for now')} />}
+      <SheetField
+        id={`chat-${step.id}`}
+        label={prompt.split('\n').pop()}
+        placeholder={step.placeholder}
+        multiline={step.multiline}
+        saveLabel="Send"
+        clearAfter
+        onCommit={(text) => answer(text, text)}
+      />
+      {skip}
     </div>
-  )
-}
-
-function SkipButton({ label = 'Skip for now', onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="min-h-11 self-center rounded-full px-4 py-2 text-sm font-medium text-zinc-500 transition active:scale-95 dark:text-zinc-400"
-    >
-      {label}
-    </button>
   )
 }
 
 function TypingDots() {
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-      <div className="flex gap-1 rounded-3xl rounded-bl-lg bg-white/90 px-4 py-4 backdrop-blur-md dark:bg-zinc-800/90">
+    <div className="flex justify-start">
+      <div className="flex gap-1 rounded-2xl rounded-bl-md bg-panel px-3.5 py-3.5 shadow-xs ring-1 ring-foreground/10">
         {[0, 1, 2].map((i) => (
           <motion.span
             key={i}
-            className="size-2 rounded-full bg-zinc-400"
-            animate={{ y: [0, -4, 0], opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.15 }}
+            className="size-1.5 rounded-full bg-muted-foreground"
+            animate={{ opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 1, repeat: Infinity, delay: i * 0.15 }}
           />
         ))}
       </div>
-    </motion.div>
+    </div>
   )
 }

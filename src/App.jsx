@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import BottomNav from './components/BottomNav'
-import { PageHeader, cx } from './components/ui'
+
 import JournalView, { PERIOD_ICONS } from './features/journal/JournalView'
 import FocusView from './features/focus/FocusView'
 import SleepView from './features/sleep/SleepView'
@@ -10,7 +10,8 @@ import ProofView from './features/proof/ProofView'
 import { PERIODS } from './lib/constants'
 import { useStoredState } from './lib/storage'
 import { useTheme } from './lib/theme'
-import { formatLongDate, getPeriod, uid, useNow } from './lib/time'
+import { useKeyboardInset } from './lib/keyboard'
+import { getPeriod, uid, useNow } from './lib/time'
 
 const DEFAULT_SLEEP = { current: null, logs: [] }
 const DEFAULT_SETTINGS = { name: '', theme: 'system' }
@@ -30,6 +31,11 @@ export default function App() {
   const [evidence, setEvidence] = useStoredState('evidence', [])
   const [proofSignal, setProofSignal] = useState(0)
   useTheme(settings.theme)
+  useKeyboardInset()
+  const scrollRef = useRef(null)
+  useEffect(() => {
+    document.documentElement.dataset.period = period
+  }, [period])
 
   /* ---------- sleep actions ---------- */
   const sleepActions = useMemo(
@@ -136,7 +142,7 @@ export default function App() {
   }
 
   const PeriodIcon = PERIOD_ICONS[period]
-  const date = formatLongDate(now)
+  const date = new Date(now).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })
   const headers = {
     journal: { title: `${meta.greeting}${settings.name ? `, ${settings.name}` : ''}` },
     proof: { title: 'Proof' },
@@ -175,40 +181,42 @@ export default function App() {
 
   // Each tab opens at the top.
   useEffect(() => {
-    window.scrollTo({ top: 0 })
+    scrollRef.current?.scrollTo({ top: 0 })
   }, [tab])
 
+  // App shell from Moti: the document never scrolls. Top bar and tab bar stay put; only the content scrolls.
   return (
-    <div className="relative min-h-dvh overflow-x-hidden">
-      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
-        <div className={cx('absolute -top-40 -left-32 size-96 rounded-full blur-3xl transition-colors duration-1000', accent.blob)} />
-      </div>
+    <div className="flex h-dvh flex-col overflow-hidden bg-app text-foreground">
+      <header className="flex min-h-14 shrink-0 items-center gap-3 border-b border-border bg-panel px-4 pt-[env(safe-area-inset-top)]">
+        <h1 className="min-w-0 truncate text-lg font-semibold">{headers[tab].title}</h1>
+        <p className="ml-auto flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground">
+          <PeriodIcon className="size-4 text-primary" aria-hidden />
+          {date}
+        </p>
+      </header>
 
-      <main className="mx-auto max-w-md px-4 pt-[max(env(safe-area-inset-top),24px)] pb-36">
-        {/*
-          Every tab stays mounted so the chat keeps its place; only the active one is visible.
-          There is no exit animation, so two tabs can never be on screen at once.
-        */}
-        {Object.entries(views).map(([id, view]) => {
-          const active = tab === id
-          const h = headers[id]
-          return (
-            <motion.section
-              key={id}
-              hidden={!active}
-              aria-hidden={!active}
-              initial={false}
-              animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
-              transition={active ? { duration: 0.22, ease: [0.22, 1, 0.36, 1] } : { duration: 0 }}
-            >
-              <PageHeader title={h.title} subtitle={date} icon={PeriodIcon} accent={accent.text} />
-              {view}
-            </motion.section>
-          )
-        })}
+      <main ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[calc(3.75rem+env(safe-area-inset-bottom))]">
+        <div className="mx-auto w-full max-w-xl px-4 pt-5 pb-8">
+          {/* Every tab stays mounted (the chat keeps its place); only the active one is shown, with no exit animation. */}
+          {Object.entries(views).map(([id, view]) => {
+            const active = tab === id
+            return (
+              <motion.section
+                key={id}
+                hidden={!active}
+                aria-hidden={!active}
+                initial={false}
+                animate={active ? { opacity: 1 } : { opacity: 0 }}
+                transition={active ? { duration: 0.18, ease: 'easeOut' } : { duration: 0 }}
+              >
+                {view}
+              </motion.section>
+            )
+          })}
+        </div>
       </main>
 
-      <BottomNav tab={tab} onChange={setTab} accent={accent.text} />
+      <BottomNav tab={tab} onChange={setTab} />
     </div>
   )
 }

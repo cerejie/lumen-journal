@@ -86,6 +86,12 @@ Edit `src/features/journal/flows.jsx`. Each step is data:
 | `lumen:evidence` | `[{ id, kind: 'win' \| 'praise' \| 'skill' \| 'built' \| 'overcame', text, detail, pinned, createdAt }]` |
 | `lumen:settings` | `{ name, theme: 'system' \| 'light' \| 'dark' }` |
 
+## Mobile behaviour
+
+- **App shell (from Moti):** fixed top bar, docked tab bar, and the document never scrolls; only the content area does. This stops iOS from leaving the tab bar stranded after the keyboard closes.
+- **Input drawer (from TARTAR):** on touch devices every text field is a tap target that opens a bottom sheet sitting on top of the keyboard (`SheetField` / `FieldSheet` in `src/components/ui.jsx`, keyboard tracking in `src/lib/keyboard.js`). On desktop the same field is an inline input.
+- **Controls:** `Input`, `Textarea`, `InputGroup`, `Label` and `Button` use the same classes and tokens as TARTAR and Moti's `components/ui`.
+
 ## Design workflow
 
 The [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) skill is vendored in `.claude/skills/ui-ux-pro-max`, so Claude Code picks it up in this repo. Run its pre-delivery checklist (`references/pro-rules.md`) before shipping UI changes.
