@@ -7,8 +7,7 @@ export function Card({ className, children, ...rest }) {
   return (
     <div
       className={cx(
-        'rounded-3xl border border-white/60 bg-white/70 p-5 shadow-sm shadow-zinc-900/5 backdrop-blur-md',
-        'dark:border-white/10 dark:bg-zinc-900/60 dark:shadow-black/20',
+        'rounded-3xl bg-white/80 p-5 backdrop-blur-md dark:bg-zinc-900/70',
         className
       )}
       {...rest}
@@ -48,8 +47,8 @@ export function OptionButton({ emoji, label, onClick, className }) {
       type="button"
       onClick={onClick}
       className={cx(
-        'flex min-h-12 items-center gap-2 rounded-2xl border border-zinc-200/80 bg-white/90 px-4 py-3 text-left text-[15px] font-medium',
-        'shadow-sm transition duration-150 active:scale-95 dark:border-white/10 dark:bg-zinc-800/80',
+        'flex min-h-12 items-center gap-2.5 rounded-2xl border border-zinc-900/[0.08] bg-white px-4 py-3 text-left text-[15px] font-medium',
+        'transition duration-150 active:scale-95 dark:border-white/10 dark:bg-zinc-900',
         className
       )}
     >
@@ -59,14 +58,39 @@ export function OptionButton({ emoji, label, onClick, className }) {
   )
 }
 
-export function SectionTitle({ icon: Icon, title, subtitle, accent }) {
+/** iOS-style large title. One per screen. */
+export function PageHeader({ title, subtitle, icon: Icon, accent, action }) {
   return (
-    <div className="mb-4 px-1">
-      <div className="flex items-center gap-2">
-        {Icon && <Icon className={cx('size-5', accent)} strokeWidth={2.2} />}
-        <h2 className="text-xl font-bold tracking-tight">{title}</h2>
+    <header className="flex items-end justify-between gap-3 px-1 pb-5">
+      <div className="min-w-0">
+        {subtitle && (
+          <p className="flex items-center gap-1.5 text-[13px] font-medium text-zinc-500 dark:text-zinc-400">
+            {Icon && <Icon className={cx('size-3.5', accent)} strokeWidth={2.4} />}
+            {subtitle}
+          </p>
+        )}
+        <h1 className="mt-0.5 truncate text-[32px] leading-tight font-bold tracking-tight text-balance">{title}</h1>
       </div>
-      {subtitle && <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{subtitle}</p>}
+      {action}
+    </header>
+  )
+}
+
+/** Small sentence-case heading above a group. */
+export function GroupLabel({ children }) {
+  return <p className="px-4 pb-2 text-[13px] font-medium text-zinc-500 dark:text-zinc-400">{children}</p>
+}
+
+/** Inset grouped list, like iOS Settings. Children are rows separated by hairlines. */
+export function Group({ className, children }) {
+  return (
+    <div
+      className={cx(
+        'divide-y divide-zinc-900/[0.06] overflow-hidden rounded-3xl bg-white/80 backdrop-blur-md dark:divide-white/[0.06] dark:bg-zinc-900/70',
+        className
+      )}
+    >
+      {children}
     </div>
   )
 }

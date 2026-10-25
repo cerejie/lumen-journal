@@ -29,19 +29,11 @@ export default function JournalView({ period, now, entries, onSaveEntry, ctx, na
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, today])
 
-  const Icon = PERIOD_ICONS[period]
-
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2 px-1">
-        <span className={cx('grid size-9 place-items-center rounded-2xl', accent.soft)}>
-          <Icon className="size-5" />
-        </span>
-        <div>
-          <h2 className="text-xl font-bold tracking-tight">{flow.title}</h2>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">One question at a time. Skip anything.</p>
-        </div>
-      </div>
+      <p className="-mt-2 px-1 text-[15px] text-zinc-500 dark:text-zinc-400">
+        {flow.title} <span className="text-zinc-400 dark:text-zinc-500">· skip anything</span>
+      </p>
 
       {session ? (
         <ChatWizard
@@ -74,12 +66,12 @@ export default function JournalView({ period, now, entries, onSaveEntry, ctx, na
 
       {earlier.length > 0 && (
         <div className="mt-2 flex flex-col gap-2">
-          <p className="px-1 text-xs font-semibold tracking-wide text-zinc-400 uppercase">Earlier today</p>
+          <p className="px-4 text-[13px] font-medium text-zinc-500 dark:text-zinc-400">Earlier today</p>
           {earlier.map((e) => {
             const EIcon = PERIOD_ICONS[e.period]
             return (
               <Card key={e.id} className="p-4">
-                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-zinc-500 dark:text-zinc-400">
+                <div className="mb-3 flex items-center gap-2 text-[13px] font-semibold text-zinc-500 dark:text-zinc-400">
                   <EIcon className="size-4" /> {PERIODS[e.period].label}
                 </div>
                 <EntrySummary entry={e} flow={flows[e.period]} />

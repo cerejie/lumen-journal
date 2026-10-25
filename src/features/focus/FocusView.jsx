@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowUpRight, CheckCircle2, Dices, Inbox, Plus, RotateCcw, Sparkles, Trash2 } from 'lucide-react'
+import { ArrowUpRight, CheckCircle2, Dices, Inbox, Plus, RotateCcw, Trash2 } from 'lucide-react'
 import { BottomSheet, Button, Card, Toast, cx } from '../../components/ui'
 import { DONE_MESSAGES, PIVOT_MESSAGES, pick } from '../../lib/constants'
 import { dayKey } from '../../lib/time'
@@ -40,20 +40,11 @@ export default function FocusView({ tasks, actions, accent }) {
     <div className="flex flex-col gap-4">
       <Toast message={toast} />
 
-      <div className="flex items-end justify-between px-1">
-        <div>
-          <div className="flex items-center gap-2">
-            <Sparkles className={cx('size-5', accent.text)} />
-            <h2 className="text-xl font-bold tracking-tight">Focus</h2>
-          </div>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Just one thing. Everything else is parked.</p>
-        </div>
-        {winsToday > 0 && (
-          <span className={cx('rounded-full px-3 py-1 text-xs font-semibold', accent.soft)}>
-            ✨ {winsToday} {winsToday === 1 ? 'win' : 'wins'} today
-          </span>
-        )}
-      </div>
+      {winsToday > 0 && (
+        <p className="-mt-2 px-1 text-[15px] text-zinc-500 dark:text-zinc-400">
+          <span className={cx('font-semibold', accent.text)}>{winsToday} done</span> today. Nice.
+        </p>
+      )}
 
       <AnimatePresence mode="wait">
         {nowTask ? (
@@ -65,8 +56,10 @@ export default function FocusView({ tasks, actions, accent }) {
             transition={{ type: 'spring', stiffness: 300, damping: 28 }}
           >
             <Card className="p-6">
-              <p className={cx('text-xs font-bold tracking-[0.2em] uppercase', accent.text)}>Now</p>
-              <p className="mt-3 text-2xl leading-snug font-bold tracking-tight break-words">{nowTask.text}</p>
+              <p className="flex items-center gap-2 text-[13px] font-semibold text-zinc-500 dark:text-zinc-400">
+                <span className={cx('size-2 rounded-full', accent.solid)} /> Now
+              </p>
+              <p className="mt-3 text-[26px] leading-snug font-bold tracking-tight text-balance break-words">{nowTask.text}</p>
               <div className="mt-6 grid grid-cols-2 gap-2">
                 <Button
                   className={accent.solid}
@@ -87,7 +80,7 @@ export default function FocusView({ tasks, actions, accent }) {
                   <RotateCcw className="size-5" /> Pivot
                 </Button>
               </div>
-              <p className="mt-3 text-center text-xs text-zinc-400">Pivoting saves it for later. It's a skill, not a miss.</p>
+              <p className="mt-3 text-center text-[13px] text-zinc-500 dark:text-zinc-400">Pivot saves it for later. No guilt.</p>
             </Card>
           </motion.div>
         ) : (
@@ -98,10 +91,12 @@ export default function FocusView({ tasks, actions, accent }) {
             exit={{ opacity: 0, y: -10 }}
           >
             <Card className="p-6">
-              <p className={cx('text-xs font-bold tracking-[0.2em] uppercase', accent.text)}>Now</p>
+              <p className="flex items-center gap-2 text-[13px] font-semibold text-zinc-500 dark:text-zinc-400">
+                <span className={cx('size-2 rounded-full', accent.solid)} /> Now
+              </p>
               <p className="mt-3 text-lg font-semibold">Nothing here. That's a fine place to be.</p>
               <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">When you're ready, pick one small thing.</p>
-              <div className="mt-5 flex items-center gap-2 rounded-2xl border border-zinc-200/80 bg-white/90 p-1.5 pl-4 dark:border-white/10 dark:bg-zinc-800/80">
+              <div className="mt-5 flex items-center gap-2 rounded-2xl border border-zinc-900/[0.08] bg-white p-1.5 pl-4 dark:border-white/10 dark:bg-zinc-900">
                 <input
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
@@ -141,12 +136,12 @@ export default function FocusView({ tasks, actions, accent }) {
         <button
           type="button"
           onClick={() => setSheet('dump')}
-          className="flex items-center justify-between rounded-3xl border border-white/60 bg-white/60 px-5 py-4 text-left backdrop-blur-md transition active:scale-[0.98] dark:border-white/10 dark:bg-zinc-900/50"
+          className="flex min-h-14 items-center justify-between rounded-3xl bg-white/80 px-5 py-4 text-left backdrop-blur-md transition active:scale-[0.98] dark:bg-zinc-900/70"
         >
           <span className="flex items-center gap-2 text-sm font-semibold">
-            <Inbox className="size-4 text-zinc-400" /> Brain dump
+            <Inbox className="size-4 text-zinc-500 dark:text-zinc-400" /> Brain dump
           </span>
-          <span className="text-sm text-zinc-400">{later.length} parked</span>
+          <span className="text-sm text-zinc-500 tabular-nums dark:text-zinc-400">{later.length} saved</span>
         </button>
         <button
           type="button"
@@ -190,7 +185,7 @@ export default function FocusView({ tasks, actions, accent }) {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="flex items-center gap-2 rounded-2xl bg-white/80 p-2 pl-4 dark:bg-zinc-800/80"
+                  className="flex items-center gap-2 rounded-2xl bg-white p-2 pl-4 dark:bg-zinc-800"
                 >
                   <span className="min-w-0 flex-1 py-2 text-[15px] break-words">{t.text}</span>
                   <button
@@ -199,7 +194,7 @@ export default function FocusView({ tasks, actions, accent }) {
                       actions.promote(t.id)
                       setSheet(null)
                     }}
-                    className={cx('flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-semibold transition active:scale-95', accent.soft)}
+                    className={cx('flex min-h-11 items-center gap-1 rounded-xl px-3 text-[13px] font-semibold transition active:scale-95', accent.soft)}
                   >
                     <ArrowUpRight className="size-3.5" /> {nowTask ? 'Swap in' : 'Do now'}
                   </button>
@@ -207,7 +202,7 @@ export default function FocusView({ tasks, actions, accent }) {
                     type="button"
                     onClick={() => actions.removeTask(t.id)}
                     aria-label="Delete"
-                    className="rounded-xl p-2 text-zinc-400 transition active:scale-90"
+                    className="grid size-11 place-items-center rounded-xl text-zinc-400 transition active:scale-90"
                   >
                     <Trash2 className="size-4" />
                   </button>

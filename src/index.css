@@ -18,6 +18,17 @@ body {
   overscroll-behavior-y: none;
 }
 
+button,
+input,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(button, input, textarea, [tabindex]):focus-visible {
+  outline: 2px solid color-mix(in oklab, currentColor 55%, transparent);
+  outline-offset: 2px;
+}
+
 button {
   cursor: pointer;
   touch-action: manipulation;

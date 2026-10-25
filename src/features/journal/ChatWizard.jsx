@@ -89,7 +89,6 @@ export default function ChatWizard({ steps, ctx, accent, closing, onFinish, onCl
         {messages.map((m) => (
           <motion.div
             key={m.id}
-            layout
             initial={{ opacity: 0, y: 12, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
@@ -100,7 +99,7 @@ export default function ChatWizard({ steps, ctx, accent, closing, onFinish, onCl
                 'max-w-[85%] whitespace-pre-line rounded-3xl px-4 py-3 text-[15px] leading-relaxed',
                 m.from === 'me'
                   ? cx('rounded-br-lg font-medium', accent.solid)
-                  : 'rounded-bl-lg border border-white/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-800/80'
+                  : 'rounded-bl-lg bg-white/90 backdrop-blur-md dark:bg-zinc-800/90'
               )}
             >
               {m.text}
@@ -180,7 +179,7 @@ function TextReply({ step, answer, accent }) {
               key={c}
               type="button"
               onClick={() => answer(c, c)}
-              className={cx('rounded-full px-3.5 py-2 text-sm font-medium transition active:scale-95', accent.soft)}
+              className={cx('min-h-10 rounded-full px-4 py-2 text-sm font-medium transition active:scale-95', accent.soft)}
             >
               {c}
             </button>
@@ -189,8 +188,8 @@ function TextReply({ step, answer, accent }) {
       )}
       <div
         className={cx(
-          'flex items-end gap-2 rounded-3xl border border-zinc-200/80 bg-white/90 p-2 pl-4 shadow-sm ring-4 ring-transparent transition',
-          'dark:border-white/10 dark:bg-zinc-800/80',
+          'flex items-end gap-2 rounded-3xl border border-zinc-900/[0.08] bg-white p-2 pl-4 ring-4 ring-transparent transition',
+          'dark:border-white/10 dark:bg-zinc-900',
           accent.ring
         )}
       >
@@ -228,7 +227,7 @@ function SkipButton({ label = 'Skip for now', onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="self-center rounded-full px-4 py-2 text-sm font-medium text-zinc-500 transition active:scale-95 dark:text-zinc-400"
+      className="min-h-11 self-center rounded-full px-4 py-2 text-sm font-medium text-zinc-500 transition active:scale-95 dark:text-zinc-400"
     >
       {label}
     </button>
@@ -238,7 +237,7 @@ function SkipButton({ label = 'Skip for now', onClick }) {
 function TypingDots() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-      <div className="flex gap-1 rounded-3xl rounded-bl-lg border border-white/60 bg-white/80 px-4 py-4 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-800/80">
+      <div className="flex gap-1 rounded-3xl rounded-bl-lg bg-white/90 px-4 py-4 backdrop-blur-md dark:bg-zinc-800/90">
         {[0, 1, 2].map((i) => (
           <motion.span
             key={i}

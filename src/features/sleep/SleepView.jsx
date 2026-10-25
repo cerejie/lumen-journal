@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { BedDouble, Moon, Sunrise, Trash2 } from 'lucide-react'
-import { Button, Card, OptionButton, Toast, cx } from '../../components/ui'
+import { Button, Card, Group, GroupLabel, OptionButton, Toast, cx } from '../../components/ui'
 import { ROUGH_HOURS, SLEEP_QUALITY, qualityEmoji } from '../../lib/constants'
 import { formatDay, formatDuration, formatTime } from '../../lib/time'
 
@@ -31,14 +31,6 @@ export default function SleepView({ sleep, actions, now, accent }) {
   return (
     <div className="flex flex-col gap-4">
       <Toast message={toast} />
-      <div className="px-1">
-        <div className="flex items-center gap-2">
-          <Moon className={cx('size-5', accent.text)} />
-          <h2 className="text-xl font-bold tracking-tight">Sleep</h2>
-        </div>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">One tap at night, one tap in the morning.</p>
-      </div>
-
       <AnimatePresence mode="wait">
         {rateId ? (
           <motion.div key="rate" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
@@ -50,21 +42,21 @@ export default function SleepView({ sleep, actions, now, accent }) {
                     key={q.value}
                     type="button"
                     onClick={() => rate(q.value)}
-                    className="flex flex-col items-center gap-1 rounded-2xl bg-white/90 py-3 text-xs font-medium shadow-sm transition active:scale-90 dark:bg-zinc-800/80"
+                    className="flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl bg-white py-3 text-xs font-medium transition active:scale-90 dark:bg-zinc-800"
                   >
                     <span className="text-3xl">{q.emoji}</span>
                     {q.label}
                   </button>
                 ))}
               </div>
-              <button type="button" onClick={() => setRateId(null)} className="mt-3 w-full py-2 text-sm text-zinc-400">
+              <button type="button" onClick={() => setRateId(null)} className="mt-3 min-h-11 w-full text-sm text-zinc-500 dark:text-zinc-400">
                 Skip
               </button>
             </Card>
           </motion.div>
         ) : inBed ? (
           <motion.div key="bed" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-            <Card className="relative overflow-hidden bg-zinc-900/80 p-6 text-white dark:bg-zinc-900/80">
+            <Card className="relative overflow-hidden bg-zinc-900 p-6 text-white dark:bg-zinc-900">
               <div className="absolute -top-10 -right-10 size-40 rounded-full bg-violet-500/30 blur-3xl" />
               <Moon className="size-8 text-violet-300" />
               <p className="mt-3 text-sm text-zinc-400">Sleeping since {formatTime(sleep.current.bedAt)}</p>
@@ -75,7 +67,7 @@ export default function SleepView({ sleep, actions, now, accent }) {
               >
                 <Sunrise className="size-5" /> I'm Awake
               </Button>
-              <button type="button" onClick={actions.cancelBed} className="mt-2 w-full py-2 text-sm text-zinc-400">
+              <button type="button" onClick={actions.cancelBed} className="mt-2 min-h-11 w-full text-sm text-zinc-400">
                 Oops, not in bed yet
               </button>
             </Card>
@@ -92,7 +84,7 @@ export default function SleepView({ sleep, actions, now, accent }) {
               <button
                 type="button"
                 onClick={() => setShowManual((v) => !v)}
-                className="mt-2 w-full py-2 text-sm text-zinc-500 dark:text-zinc-400"
+                className="mt-2 min-h-11 w-full text-sm text-zinc-500 dark:text-zinc-400"
               >
                 Forgot to tap? Add last night roughly
               </button>
@@ -125,10 +117,9 @@ export default function SleepView({ sleep, actions, now, accent }) {
 
       {recent.length > 0 && (
         <Card>
-          <p className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">Your last {recent.length} logged {recent.length === 1 ? 'night' : 'nights'}</p>
+          <p className="text-[13px] font-medium text-zinc-500 dark:text-zinc-400">Average of your last {recent.length} logged {recent.length === 1 ? 'night' : 'nights'}</p>
           <div className="mt-2 flex items-baseline gap-2">
             <p className="text-3xl font-bold tabular-nums">{formatDuration(avg)}</p>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">average</p>
           </div>
           {rested > 0 && (
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -156,38 +147,32 @@ export default function SleepView({ sleep, actions, now, accent }) {
       )}
 
       {logs.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <p className="px-1 text-xs font-semibold tracking-wide text-zinc-400 uppercase">Logged nights</p>
-          <AnimatePresence initial={false}>
+        <div>
+          <GroupLabel>Logged nights</GroupLabel>
+          <Group>
             {logs.slice(0, 30).map((l) => (
-              <motion.div
-                key={l.id}
-                layout
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <Card className="flex items-center gap-3 p-4">
-                  <span className="text-2xl">{qualityEmoji(l.quality) || '🌙'}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[15px] font-semibold">{formatDay(l.wakeAt)}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                      {formatTime(l.bedAt)} → {formatTime(l.wakeAt)}
-                    </p>
-                  </div>
-                  <p className="font-semibold tabular-nums">{formatDuration(l.wakeAt - l.bedAt)}</p>
-                  <button
-                    type="button"
-                    aria-label="Delete night"
-                    onClick={() => actions.deleteLog(l.id)}
-                    className="rounded-xl p-2 text-zinc-400 transition active:scale-90"
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
-                </Card>
-              </motion.div>
+              <div key={l.id} className="flex items-center gap-3 py-2 pr-1 pl-4">
+                <span className="w-7 text-center text-xl" aria-label={l.quality ?? 'not rated'}>
+                  {qualityEmoji(l.quality) || <Moon className="mx-auto size-4 text-zinc-400" />}
+                </span>
+                <div className="min-w-0 flex-1 py-1">
+                  <p className="text-[15px] font-semibold">{formatDay(l.wakeAt)}</p>
+                  <p className="text-[13px] text-zinc-500 tabular-nums dark:text-zinc-400">
+                    {formatTime(l.bedAt)} – {formatTime(l.wakeAt)}
+                  </p>
+                </div>
+                <p className="font-semibold tabular-nums">{formatDuration(l.wakeAt - l.bedAt)}</p>
+                <button
+                  type="button"
+                  aria-label={`Delete ${formatDay(l.wakeAt)}`}
+                  onClick={() => actions.deleteLog(l.id)}
+                  className="grid size-11 place-items-center rounded-xl text-zinc-400 transition active:scale-90"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </div>
             ))}
-          </AnimatePresence>
+          </Group>
         </div>
       )}
     </div>

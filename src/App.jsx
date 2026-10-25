@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useMemo, useState } from 'react'
+import { motion } from 'framer-motion'
 import BottomNav from './components/BottomNav'
-import { cx } from './components/ui'
+import { PageHeader, cx } from './components/ui'
 import JournalView, { PERIOD_ICONS } from './features/journal/JournalView'
 import FocusView from './features/focus/FocusView'
 import SleepView from './features/sleep/SleepView'
@@ -114,58 +114,65 @@ export default function App() {
   }
 
   const PeriodIcon = PERIOD_ICONS[period]
+  const date = formatLongDate(now)
+  const headers = {
+    journal: { title: `${meta.greeting}${settings.name ? `, ${settings.name}` : ''}`, subtitle: date, icon: PeriodIcon },
+    focus: { title: 'Focus', subtitle: 'One thing at a time' },
+    sleep: { title: 'Sleep', subtitle: 'One tap at night, one in the morning' },
+    settings: { title: 'Settings', subtitle: 'Everything stays on this device' },
+  }
+
+  const views = {
+    journal: (
+      <JournalView period={period} now={now} entries={journal} onSaveEntry={saveEntry} ctx={ctx} name={settings.name} />
+    ),
+    focus: <FocusView tasks={tasks} actions={taskActions} accent={accent} />,
+    sleep: <SleepView sleep={sleep} actions={sleepActions} now={now} accent={accent} />,
+    settings: (
+      <SettingsView
+        settings={settings}
+        setSettings={setSettings}
+        exportData={exportData}
+        importData={importData}
+        resetAll={resetAll}
+        accent={accent}
+      />
+    ),
+  }
+
+  // Each tab opens at the top.
+  useEffect(() => {
+    window.scrollTo({ top: 0 })
+  }, [tab])
 
   return (
     <div className="relative min-h-dvh overflow-x-hidden">
-      {/* Soft ambient glow that shifts with the time of day */}
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
-        <div className={cx('absolute -top-32 -left-24 size-80 rounded-full blur-3xl transition-colors duration-1000', accent.blob)} />
-        <div className="absolute top-1/2 -right-32 size-72 rounded-full bg-zinc-300/40 blur-3xl dark:bg-zinc-700/20" />
+        <div className={cx('absolute -top-40 -left-32 size-96 rounded-full blur-3xl transition-colors duration-1000', accent.blob)} />
       </div>
 
-      <header className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),20px)] pb-2">
-        <p className="flex items-center gap-1.5 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-          <PeriodIcon className={cx('size-4', accent.text)} /> {formatLongDate(now)}
-        </p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight">
-          {meta.greeting}
-          {settings.name ? `, ${settings.name}` : ''}
-        </h1>
-      </header>
-
-      <main className="mx-auto max-w-md px-4 pt-4 pb-36">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={tab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2 }}
-          >
-            {tab === 'journal' && (
-              <JournalView
-                period={period}
-                now={now}
-                entries={journal}
-                onSaveEntry={saveEntry}
-                ctx={ctx}
-                name={settings.name}
-              />
-            )}
-            {tab === 'focus' && <FocusView tasks={tasks} actions={taskActions} accent={accent} />}
-            {tab === 'sleep' && <SleepView sleep={sleep} actions={sleepActions} now={now} accent={accent} />}
-            {tab === 'settings' && (
-              <SettingsView
-                settings={settings}
-                setSettings={setSettings}
-                exportData={exportData}
-                importData={importData}
-                resetAll={resetAll}
-                accent={accent}
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
+      <main className="mx-auto max-w-md px-4 pt-[max(env(safe-area-inset-top),24px)] pb-36">
+        {/*
+          Every tab stays mounted so the chat keeps its place; only the active one is visible.
+          There is no exit animation, so two tabs can never be on screen at once.
+        */}
+        {Object.entries(views).map(([id, view]) => {
+          const active = tab === id
+          const h = headers[id]
+          return (
+            <motion.section
+              key={id}
+              hidden={!active}
+              aria-hidden={!active}
+              initial={false}
+              animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
+              transition={active ? { duration: 0.22, ease: [0.22, 1, 0.36, 1] } : { duration: 0 }}
+            >
+              <PageHeader title={h.title} subtitle={h.subtitle} icon={h.icon} accent={accent.text} />
+              {view}
+            </motion.section>
+          )
+        })}
       </main>
 
       <BottomNav tab={tab} onChange={setTab} accent={accent.text} />
