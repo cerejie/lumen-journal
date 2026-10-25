@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Plus, Shuffle } from 'lucide-react'
 import { Button } from '../../components/ui'
@@ -23,16 +23,26 @@ const formatWhen = (ts) =>
 
 const SURFACE = 'rounded-xl bg-primary-soft p-5 ring-1 ring-primary/15'
 
-export default function ProofCard({ evidence, onAdd }) {
+export default function ProofCard({ evidence, shuffle = 0, onAdd }) {
   const [offset, setOffset] = useState(0)
   const today = dayKey()
   const item = useMemo(() => dailyPick(evidence, today, offset), [evidence, today, offset])
 
+  // Step forward until a different item comes up (starred items appear twice in the pool).
   const another = () => {
-    let next = offset + 1
-    for (let i = 0; i < 4 && evidence.length > 1 && dailyPick(evidence, today, next)?.id === item?.id; i++) next++
-    setOffset(next)
+    setOffset((current) => {
+      const shown = dailyPick(evidence, today, current)?.id
+      let next = current + 1
+      for (let i = 0; i < 4 && evidence.length > 1 && dailyPick(evidence, today, next)?.id === shown; i++) next++
+      return next
+    })
   }
+
+  // Pull to refresh shows a different proof, same as tapping Another.
+  useEffect(() => {
+    if (shuffle) another()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shuffle])
 
   if (!item) {
     return (

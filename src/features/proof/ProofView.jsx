@@ -9,7 +9,7 @@ const shortDate = (ts) => new Date(ts).toLocaleDateString([], { month: 'short', 
 const ICON_BUTTON =
   'relative grid size-9 shrink-0 place-items-center rounded-md transition-all after:absolute after:-inset-1 active:translate-y-px active:bg-muted'
 
-export default function ProofView({ evidence, actions, addSignal }) {
+export default function ProofView({ evidence, actions, addSignal, shuffle }) {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [kind, setKind] = useState('win')
   const [text, setText] = useState('')
@@ -45,7 +45,7 @@ export default function ProofView({ evidence, actions, addSignal }) {
   return (
     <div className="flex flex-col gap-6">
       <Toast message={toast} />
-      <ProofCard evidence={evidence} onAdd={() => openAdd()} />
+      <ProofCard evidence={evidence} shuffle={shuffle} onAdd={() => openAdd()} />
 
       {evidence.length === 0 ? (
         <div>

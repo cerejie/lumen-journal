@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import BottomNav from './components/BottomNav'
+import PullIndicator from './components/PullIndicator'
+import Splash from './components/Splash'
 
 import JournalView, { PERIOD_ICONS } from './features/journal/JournalView'
 import FocusView from './features/focus/FocusView'
@@ -8,7 +10,8 @@ import SleepView from './features/sleep/SleepView'
 import SettingsView from './features/settings/SettingsView'
 import ProofView from './features/proof/ProofView'
 import { PERIODS } from './lib/constants'
-import { useStoredState } from './lib/storage'
+import { readStore, useStoredState } from './lib/storage'
+import { usePullToRefresh } from './lib/pull'
 import { useTheme } from './lib/theme'
 import { useKeyboardInset } from './lib/keyboard'
 import { getPeriod, uid, useNow } from './lib/time'
@@ -33,6 +36,14 @@ export default function App() {
   useTheme(settings.theme)
   useKeyboardInset()
   const scrollRef = useRef(null)
+  const [splash, setSplash] = useState(() => {
+    try {
+      return !sessionStorage.getItem('lumen:splashed')
+    } catch {
+      return true
+    }
+  })
+  const [shuffle, setShuffle] = useState(0)
   useEffect(() => {
     document.documentElement.dataset.period = period
   }, [period])
@@ -102,6 +113,24 @@ export default function App() {
     setProofSignal((n) => n + 1)
   }
 
+  const closeSplash = useCallback(() => {
+    try {
+      sessionStorage.setItem('lumen:splashed', '1')
+    } catch {
+      // private mode: the splash simply shows again next time
+    }
+    setSplash(false)
+  }, [])
+
+  // Pull to refresh: reload what is saved on this device and show a different proof.
+  const pull = usePullToRefresh(() => {
+    setJournal(readStore('journal', []))
+    setTasks(readStore('tasks', []))
+    setSleep(readStore('sleep', DEFAULT_SLEEP))
+    setEvidence(readStore('evidence', []))
+    setShuffle((n) => n + 1)
+  })
+
   /* ---------- context handed to the reflection engine ---------- */
   const lastLog = sleep.logs[0]
   const ctx = {
@@ -161,10 +190,11 @@ export default function App() {
         ctx={ctx}
         name={settings.name}
         evidence={evidence}
+        shuffle={shuffle}
         onAddProof={openAddProof}
       />
     ),
-    proof: <ProofView evidence={evidence} actions={evidenceActions} accent={accent} addSignal={proofSignal} />,
+    proof: <ProofView evidence={evidence} actions={evidenceActions} addSignal={proofSignal} shuffle={shuffle} />,
     focus: <FocusView tasks={tasks} actions={taskActions} accent={accent} />,
     sleep: <SleepView sleep={sleep} actions={sleepActions} now={now} accent={accent} />,
     settings: (
@@ -195,7 +225,8 @@ export default function App() {
         </p>
       </header>
 
-      <main ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[calc(3.75rem+env(safe-area-inset-bottom))]">
+      <main ref={scrollRef} {...pull.handlers} className="min-h-0 flex-1 overflow-y-auto overscroll-none pb-[calc(3.75rem+env(safe-area-inset-bottom))]">
+        <PullIndicator pull={pull} />
         <div className="mx-auto w-full max-w-xl px-4 pt-5 pb-8">
           {/* Every tab stays mounted (the chat keeps its place); only the active one is shown, with no exit animation. */}
           {Object.entries(views).map(([id, view]) => {
@@ -217,6 +248,8 @@ export default function App() {
       </main>
 
       <BottomNav tab={tab} onChange={setTab} />
+
+      <AnimatePresence>{splash && <Splash key="splash" evidence={evidence} name={settings.name} onDone={closeSplash} />}</AnimatePresence>
     </div>
   )
 }

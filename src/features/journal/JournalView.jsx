@@ -10,7 +10,7 @@ import { dayKey, formatTime } from '../../lib/time'
 export const PERIOD_ICONS = { morning: Sunrise, afternoon: Sun, evening: Moon }
 const ORDER = ['morning', 'afternoon', 'evening']
 
-export default function JournalView({ period, now, entries, onSaveEntry, ctx, name, evidence, onAddProof }) {
+export default function JournalView({ period, now, entries, onSaveEntry, ctx, name, evidence, shuffle, onAddProof }) {
   const flows = useMemo(() => buildFlows({ name }), [name])
   const flow = flows[period]
   const today = dayKey(now)
@@ -29,7 +29,7 @@ export default function JournalView({ period, now, entries, onSaveEntry, ctx, na
 
   return (
     <div className="flex flex-col gap-6">
-      <ProofCard evidence={evidence} onAdd={onAddProof} />
+      <ProofCard evidence={evidence} shuffle={shuffle} onAdd={onAddProof} />
 
       {session ? (
         <ChatWizard

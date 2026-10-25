@@ -90,6 +90,8 @@ Edit `src/features/journal/flows.jsx`. Each step is data:
 
 - **App shell (from Moti):** fixed top bar, docked tab bar, and the document never scrolls; only the content area does. This stops iOS from leaving the tab bar stranded after the keyboard closes.
 - **Input drawer (from TARTAR):** on touch devices every text field is a tap target that opens a bottom sheet sitting on top of the keyboard (`SheetField` / `FieldSheet` in `src/components/ui.jsx`, keyboard tracking in `src/lib/keyboard.js`). On desktop the same field is an inline input.
+- **Pull to refresh (from TARTAR):** pull the content down at the top; the badge turns as you pull and spins while it reloads saved data and shows a different proof (`src/lib/pull.js`).
+- **Splash:** native launch images for iPhone/iPad in light and dark (`public/splash/`), then an interactive splash with the mark and one of your proof items. Tap or swipe up to go straight in; shown once per launch.
 - **Controls:** `Input`, `Textarea`, `InputGroup`, `Label` and `Button` use the same classes and tokens as TARTAR and Moti's `components/ui`.
 
 ## Design workflow

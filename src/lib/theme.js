@@ -7,7 +7,7 @@ export function useTheme(pref) {
     const apply = () => {
       const dark = pref === 'dark' || (pref === 'system' && mq.matches)
       document.documentElement.classList.toggle('dark', dark)
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#09090b' : '#f4f4f5')
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#18181b' : '#ffffff')
     }
     apply()
     mq.addEventListener('change', apply)
