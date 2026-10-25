@@ -19,6 +19,8 @@ export function useKeyboardInset() {
     const apply = () => {
       const covered = window.innerHeight - viewport.height - viewport.offsetTop
       root.style.setProperty('--keyboard-inset', `${Math.max(0, Math.round(covered))}px`)
+      // Where sheets sit: on the keyboard when it is up, otherwise on the true bottom of the screen.
+      root.style.setProperty('--sheet-lift', covered >= 1 ? `calc(${Math.round(covered)}px + var(--below-viewport))` : '0px')
       root.style.setProperty('--visual-viewport-height', `${Math.round(viewport.height)}px`)
       // iOS Safari scrolls the whole page up when the keyboard opens and leaves it there after it closes,
       // which strands fixed bars (the tab bar) higher on screen. Once the keyboard is gone, put the page back.
@@ -42,6 +44,7 @@ export function useKeyboardInset() {
       document.removeEventListener('focusin', onFocusIn)
       document.removeEventListener('focusout', onFocusOut)
       root.style.removeProperty('--keyboard-inset')
+      root.style.removeProperty('--sheet-lift')
       root.style.removeProperty('--visual-viewport-height')
       root.removeAttribute('data-keyboard-open')
     }

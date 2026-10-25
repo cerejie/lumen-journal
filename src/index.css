@@ -36,6 +36,7 @@
   --ring: var(--primary);
   --primary-soft: color-mix(in oklab, var(--primary) 9%, var(--panel));
   --keyboard-inset: 0px;
+  --sheet-lift: 0px;
   --visual-viewport-height: 100dvh;
 }
 

@@ -36,7 +36,7 @@ export default function SkyWave({ kind, origin, onDone }) {
   return (
     <motion.div
       aria-hidden
-      className="pointer-events-none fixed inset-0 z-[90] grid place-items-center"
+      className="pointer-events-none fixed inset-x-0 top-0 bottom-[calc(-1*var(--below-viewport))] z-[90] grid place-items-center"
       style={{ background: sky.background }}
       initial={{ clipPath: `circle(0% at ${at})`, opacity: 1 }}
       animate={{ clipPath: `circle(150% at ${at})`, opacity: [1, 1, 1, 0] }}

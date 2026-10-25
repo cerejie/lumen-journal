@@ -66,7 +66,7 @@ export default function Splash({ evidence, name, onDone }) {
       onDragEnd={(_, info) => {
         if (info.offset.y < -60 || info.velocity.y < -400) onDone()
       }}
-      className="fixed inset-0 z-[100] flex cursor-pointer touch-none flex-col items-center justify-center bg-app px-8 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-center outline-none select-none"
+      className="fixed inset-x-0 top-0 bottom-[calc(-1*var(--below-viewport))] z-[100] flex cursor-pointer touch-none flex-col items-center justify-center bg-app px-8 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-center outline-none select-none"
       initial={{ opacity: 1 }}
       exit={{ opacity: 0, scale: 1.04, transition: { duration: 0.3, ease: 'easeIn' } }}
     >

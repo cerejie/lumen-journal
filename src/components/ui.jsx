@@ -223,7 +223,7 @@ export function Sheet({ open, onClose, title, labelFor, action, children }) {
     <OnBody>
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50" data-overlay>
+        <div className="fixed inset-x-0 top-0 bottom-[calc(-1*var(--below-viewport))] z-50" data-overlay>
           <motion.div
             className="absolute inset-0 bg-black/30 backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
@@ -242,7 +242,7 @@ export function Sheet({ open, onClose, title, labelFor, action, children }) {
               if (e.target.closest('button') && document.activeElement?.matches('input, textarea')) e.preventDefault()
             }}
             className={cx(
-              'absolute inset-x-0 bottom-(--keyboard-inset) mx-auto flex max-h-[calc(0.92*var(--visual-viewport-height))] max-w-xl flex-col',
+              'absolute inset-x-0 bottom-(--sheet-lift) mx-auto flex max-h-[calc(0.92*var(--visual-viewport-height))] max-w-xl flex-col',
               'rounded-t-[28px] border-t border-white/40 bg-white/80 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-8px_40px_rgba(0,0,0,0.18)] backdrop-blur-2xl in-data-keyboard-open:pb-0 dark:border-white/10 dark:bg-zinc-900/80'
             )}
             initial={{ opacity: 0, y: 40 }}
