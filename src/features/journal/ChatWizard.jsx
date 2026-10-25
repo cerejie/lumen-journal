@@ -58,7 +58,9 @@ export default function ChatWizard({ steps, ctx, closing, onFinish, onClose }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished])
 
+  // Follow the conversation once it is under way; on first open, stay at the top of the page.
   useEffect(() => {
+    if (messages.length < 2 && !finished) return
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [messages, typing, finished])
 

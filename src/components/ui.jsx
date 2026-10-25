@@ -1,10 +1,17 @@
 import { forwardRef, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowUp, Mic, X } from 'lucide-react'
 import { useIsCoarse } from '../lib/keyboard'
 import { useSpeech } from '../lib/speech'
 
 export const cx = (...classes) => classes.filter(Boolean).join(' ')
+
+/**
+ * Render overlays on <body>. Glass cards use backdrop-filter, and any element with a filter becomes the
+ * containing block for position:fixed children, which would trap sheets and toasts inside the card.
+ */
+export const OnBody = ({ children }) => createPortal(children, document.body)
 
 /* ---------- Glass system ---------- */
 
@@ -191,9 +198,10 @@ export function Sheet({ open, onClose, title, labelFor, children }) {
   }, [open, onClose])
 
   return (
+    <OnBody>
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-50" data-overlay>
           <motion.div
             className="absolute inset-0 bg-black/30 backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
@@ -238,6 +246,7 @@ export function Sheet({ open, onClose, title, labelFor, children }) {
         </div>
       )}
     </AnimatePresence>
+    </OnBody>
   )
 }
 
@@ -454,6 +463,7 @@ export function SheetField({ id, label, value = '', placeholder, onCommit, multi
 
 export function Toast({ message }) {
   return (
+    <OnBody>
     <div className="pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top)+4.5rem)] z-[60] flex justify-center px-4">
       <AnimatePresence>
         {message && (
@@ -470,6 +480,7 @@ export function Toast({ message }) {
         )}
       </AnimatePresence>
     </div>
+    </OnBody>
   )
 }
 

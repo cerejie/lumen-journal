@@ -29,7 +29,8 @@ export function usePullToRefresh(onRefresh, minMs = 700) {
 
   const handlers = {
     onTouchStart: (e) => {
-      if (e.currentTarget.scrollTop > 0 || refreshing) return
+      // Touches inside a sheet or toast bubble here through React portals; only the scroll area itself counts.
+      if (!e.currentTarget.contains(e.target) || e.currentTarget.scrollTop > 0 || refreshing) return
       startY.current = e.touches[0]?.clientY ?? null
     },
     onTouchMove: (e) => {

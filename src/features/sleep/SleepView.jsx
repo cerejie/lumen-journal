@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Moon, Sunrise, Trash2 } from 'lucide-react'
 import SkyWave from '../../components/SkyWave'
-import { Button, Card, Chip, Group, GroupLabel, PRESS, Toast, cx, useToast } from '../../components/ui'
+import { Button, Card, Chip, Group, GroupLabel, OnBody, PRESS, Toast, cx, useToast } from '../../components/ui'
 import { ROUGH_HOURS, SLEEP_QUALITY, qualityEmoji } from '../../lib/constants'
 import { formatDay, formatDuration, formatTime } from '../../lib/time'
 
@@ -77,7 +77,9 @@ export default function SleepView({ sleep, actions, now }) {
   return (
     <div className="flex flex-col gap-6">
       <Toast message={toast} />
-      <AnimatePresence>{wave && <SkyWave key={wave.kind} kind={wave.kind} origin={wave.origin} onDone={() => setWave(null)} />}</AnimatePresence>
+      <OnBody>
+        <AnimatePresence>{wave && <SkyWave key={wave.kind} kind={wave.kind} origin={wave.origin} onDone={() => setWave(null)} />}</AnimatePresence>
+      </OnBody>
 
       <AnimatePresence mode="wait" initial={false}>
         {rateId ? (

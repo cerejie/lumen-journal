@@ -17,7 +17,7 @@ export const TABS = [
 export default function BottomNav({ tab, onChange }) {
   return (
     <nav aria-label="Primary" className="pointer-events-none fixed inset-x-0 bottom-[max(1.5rem,env(safe-area-inset-bottom))] z-30 flex justify-center px-4">
-      <div className="pointer-events-auto flex w-full max-w-xs items-center justify-between rounded-full border border-white/10 bg-zinc-900/80 px-2.5 py-2 shadow-2xl backdrop-blur-xl">
+      <div className="pointer-events-auto flex w-full max-w-xs items-center justify-between rounded-full border border-white/70 bg-white/75 px-2.5 py-2 shadow-[0_12px_40px_rgba(0,0,0,0.14),var(--shadow-glass-inner)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/80 dark:shadow-2xl">
         {TABS.map(({ id, label, icon: Icon }) => {
           const active = tab === id
           return (
@@ -33,7 +33,7 @@ export default function BottomNav({ tab, onChange }) {
                 <motion.span
                   layoutId="nav-pill"
                   aria-hidden
-                  className="absolute inset-0 rounded-full bg-white/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
+                  className="absolute inset-0 rounded-full bg-primary/12 shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)] dark:bg-white/15 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
                   transition={{ type: 'spring', stiffness: 500, damping: 28, mass: 0.8 }}
                 />
               )}
@@ -43,7 +43,7 @@ export default function BottomNav({ tab, onChange }) {
                 strokeWidth={active ? 2.3 : 2}
                 className={cx(
                   'relative transition-all duration-300 ease-spring',
-                  active ? 'scale-110 text-primary-bright' : 'text-white opacity-50'
+                  active ? 'scale-110 text-primary dark:text-primary-bright' : 'text-zinc-700 opacity-60 dark:text-white dark:opacity-50'
                 )}
               />
             </button>
