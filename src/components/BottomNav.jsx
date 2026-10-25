@@ -16,7 +16,7 @@ export const TABS = [
  */
 export default function BottomNav({ tab, onChange }) {
   return (
-    <nav aria-label="Primary" className="pointer-events-none fixed inset-x-0 bottom-[max(1.5rem,env(safe-area-inset-bottom))] z-30 flex justify-center px-4">
+    <nav aria-label="Primary" className="pointer-events-none fixed inset-x-0 bottom-(--nav-bottom) z-30 flex justify-center px-4">
       <div className="pointer-events-auto flex w-full max-w-xs items-center justify-between rounded-full border border-white/70 bg-white/75 px-2.5 py-2 shadow-[0_12px_40px_rgba(0,0,0,0.14),var(--shadow-glass-inner)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/80 dark:shadow-2xl">
         {TABS.map(({ id, label, icon: Icon }) => {
           const active = tab === id

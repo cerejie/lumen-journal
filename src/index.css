@@ -21,6 +21,8 @@
 }
 
 :root {
+  --below-viewport: 0px;
+  --nav-bottom: max(1.5rem, env(safe-area-inset-bottom));
   --app: #f1f1f3;
   --panel: #ffffff;
   --foreground: #18181b;
@@ -63,6 +65,21 @@ body,
   height: 100%;
 }
 
+/* Home-screen app with a short viewport: the tab bar measures from just above the indicator already. */
+:root[data-short-viewport] {
+  --nav-bottom: 0.75rem;
+}
+
+/* Whatever shows beyond the page (the strip under the home indicator, overscroll) matches the
+   bottom of the ambient background instead of a bare dark or grey band. */
+html { background: var(--app-edge, var(--app)); }
+:root[data-period="morning"] { --app-edge: #fbe9dc; }
+:root[data-period="afternoon"] { --app-edge: #dcefee; }
+:root[data-period="evening"] { --app-edge: #e4e3f6; }
+.dark[data-period="morning"] { --app-edge: #1f1712; }
+.dark[data-period="afternoon"] { --app-edge: #0d1a22; }
+.dark[data-period="evening"] { --app-edge: #1d2160; }
+
 /* The document never scrolls (Moti app shell); only <main> does. Nothing for iOS to leave shifted. */
 html,
 body {
@@ -71,7 +88,7 @@ body {
 
 body {
   margin: 0;
-  background: var(--app);
+  background: transparent;
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;

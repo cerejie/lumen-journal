@@ -28,7 +28,7 @@ const MESH = {
 export default function Ambient({ period }) {
   const m = MESH[period]
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-app">
+    <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 bottom-[calc(-1*var(--below-viewport))] -z-10 overflow-hidden bg-app">
       <div className={cx('absolute inset-0 transition-colors duration-1000', m.base)} />
       <div className={cx('ambient-a absolute -top-[15%] -left-[20%] size-[75vmax] rounded-full blur-3xl transition-colors duration-1000', m.a)} />
       <div className={cx('ambient-b absolute top-[35%] -right-[25%] size-[65vmax] rounded-full blur-3xl transition-colors duration-1000', m.b)} />

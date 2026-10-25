@@ -15,6 +15,7 @@ import { readStore, useStoredState } from './lib/storage'
 import { usePullToRefresh } from './lib/pull'
 import { useTheme } from './lib/theme'
 import { useKeyboardInset } from './lib/keyboard'
+import { useViewportFix } from './lib/viewport'
 import { getPeriod, uid, useNow } from './lib/time'
 
 const DEFAULT_SLEEP = { current: null, logs: [] }
@@ -36,6 +37,7 @@ export default function App() {
   const [proofSignal, setProofSignal] = useState(0)
   useTheme(settings.theme)
   useKeyboardInset()
+  useViewportFix()
   const scrollRef = useRef(null)
   const [splash, setSplash] = useState(() => {
     try {
@@ -227,7 +229,7 @@ export default function App() {
         </p>
       </header>
 
-      <main ref={scrollRef} {...pull.handlers} className="scroll-thin min-h-0 flex-1 overflow-y-auto overscroll-none pb-[calc(5.5rem+max(1.5rem,env(safe-area-inset-bottom)))] scroll-pb-[calc(6.5rem+max(1.5rem,env(safe-area-inset-bottom)))]">
+      <main ref={scrollRef} {...pull.handlers} className="scroll-thin min-h-0 flex-1 overflow-y-auto overscroll-none pb-[calc(5.5rem+var(--nav-bottom))] scroll-pb-[calc(6.5rem+var(--nav-bottom))]">
         <PullIndicator pull={pull} />
         <div className="mx-auto w-full max-w-xl px-4 pt-5 pb-8">
           {/* Every tab stays mounted (the chat keeps its place); only the active one is shown, with no exit animation. */}
