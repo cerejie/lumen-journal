@@ -1,0 +1,83 @@
+# Lumen — Gentle Journal & Focus
+
+A hyper-minimal, mobile-first PWA for ADHD brains that freeze on perfectionism. No streaks, no missed days, no blank forms — just one small question at a time.
+
+## Features
+
+- **Adaptive reflection chat** — detects the time of day and shows only that check-in:
+  - Morning (06:00–11:59): sleep review → how you feel → one intention (optionally becomes your NOW task)
+  - Afternoon (12:00–16:59): battery + brain-fog taps → optional micro note
+  - Evening (17:00–05:59): one tiny win → brain dump (optionally tucked into Focus) → "going to bed?"
+- **Zero-guilt UX** — missed reflections are never shown. Only completed check-ins from *today* appear under "Earlier today".
+- **NOW focus engine** — only one active task. Done 🎉 or Pivot 🔄 (saves for later, no shame). Brain dump is hidden in a sheet; "Surprise me" picks for you when choosing is the hard part.
+- **1-tap sleep tracker** — Going to Bed / I'm Awake, auto duration, emoji quality check, "Oops, not in bed yet" undo, and rough manual logging (5–9h) for nights you forgot to tap.
+- **Settings** — name, Auto/Light/Dark theme, install button, JSON export/import, erase all.
+- **Offline PWA** — web manifest + service worker; everything lives in `localStorage` (keys prefixed `lumen:`). No accounts, no server.
+
+## Stack
+
+React 19 · Vite · Tailwind CSS v4 · Framer Motion · Lucide React
+
+## Run locally
+
+```bash
+yarn
+yarn dev          # http://localhost:5173
+```
+
+Production build + preview (service worker is only registered in production builds):
+
+```bash
+yarn build
+yarn preview      # http://localhost:4173
+```
+
+To test on your phone over Wi-Fi: `yarn dev --host`, then open the printed Network URL. Install-to-home-screen needs HTTPS, so use a deploy for that.
+
+## Deploy
+
+**Vercel** — import the repo at vercel.com/new. Framework preset: Vite. Build `yarn build`, output `dist`. `vercel.json` makes sure `sw.js` is never cached stale.
+
+**Netlify** — import the repo; `netlify.toml` already sets build command and publish dir.
+
+Then open the site on your phone:
+- **Android / Chrome:** Settings tab → *Add to Home Screen* (or browser menu → Install app)
+- **iPhone / Safari:** Share → *Add to Home Screen*
+
+## Project layout
+
+```
+public/
+  manifest.webmanifest   PWA manifest
+  sw.js                  service worker (offline shell; bump VERSION to bust caches)
+  icons/                 app icons (192, 512, maskable, apple-touch)
+src/
+  App.jsx                state, actions, layout, tab routing
+  lib/                   storage hook, time-of-day helpers, theme, install prompt, constants
+  components/            UI primitives (Card, Button, BottomSheet, Toast) + BottomNav
+  features/journal/      ChatWizard engine + flow definitions per period
+  features/focus/        NOW task engine + brain dump
+  features/sleep/        sleep tracker + log
+  features/settings/     preferences + backup
+```
+
+### Adding or changing a question
+
+Edit `src/features/journal/flows.jsx`. Each step is data:
+
+```js
+{ id: 'energy', type: 'choice', prompt: "How's your battery?", options: [...], skippable: true }
+{ id: 'note', type: 'text', prompt: 'Anything to jot down?', chips: [...], multiline: true }
+{ id: 'x', type: 'custom', render: ({ answer, ctx }) => <MyButtons /> }
+```
+
+`when(answers, ctx)` makes a step conditional; `onAnswer(value, ctx, answers)` runs a side effect (e.g. start sleep tracking).
+
+## Data shape (localStorage)
+
+| Key | Shape |
+| --- | --- |
+| `lumen:journal` | `[{ id, date: 'YYYY-MM-DD', period, createdAt, answers }]` — a day runs 06:00→05:59 |
+| `lumen:tasks` | `[{ id, text, status: 'now' \| 'later' \| 'done', createdAt, doneAt }]` |
+| `lumen:sleep` | `{ current: { bedAt } \| null, logs: [{ id, bedAt, wakeAt, quality }] }` |
+| `lumen:settings` | `{ name, theme: 'system' \| 'light' \| 'dark' }` |
