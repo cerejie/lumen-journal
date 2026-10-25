@@ -74,7 +74,7 @@ function SleepReview({ ctx, answer }) {
       <button
         type="button"
         onClick={() => answer({ needsQuality: false }, 'Skip sleep today')}
-        className="mx-auto flex h-11 items-center rounded-lg px-4 text-sm font-medium text-muted-foreground active:bg-muted"
+        className="mx-auto flex h-11 items-center rounded-full px-4 text-sm font-medium text-muted-foreground transition-all duration-300 ease-spring active:scale-[0.96]"
       >
         Skip sleep today
       </button>

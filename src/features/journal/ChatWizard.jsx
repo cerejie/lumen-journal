@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Button, Chip, OptionButton, SheetField, cx } from '../../components/ui'
+import MicButton, { SoundWave } from '../../components/MicButton'
+import { Button, Chip, GLASS, OptionButton, SheetField, cx } from '../../components/ui'
+import { useSpeech } from '../../lib/speech'
 
 const TYPING_MS = 500
+const FLASH_MS = 180
 
 function nextIndex(steps, from, answers, ctx) {
   for (let i = from; i < steps.length; i++) {
@@ -84,17 +87,17 @@ export default function ChatWizard({ steps, ctx, closing, onFinish, onClose }) {
       {messages.map((m) => (
         <motion.div
           key={m.id}
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
+          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
           className={cx('flex', m.from === 'me' ? 'justify-end' : 'justify-start')}
         >
           <div
             className={cx(
-              'max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[15px] leading-relaxed whitespace-pre-line',
+              'max-w-[85%] rounded-3xl px-4 py-3 text-[15px] leading-relaxed whitespace-pre-line',
               m.from === 'me'
-                ? 'rounded-br-md bg-primary font-medium text-primary-foreground'
-                : 'rounded-bl-md bg-panel shadow-xs ring-1 ring-foreground/10'
+                ? 'rounded-br-lg bg-primary font-medium text-primary-foreground shadow-[var(--shadow-glow)]'
+                : cx('rounded-bl-lg', GLASS)
             )}
           >
             {m.text}
@@ -108,10 +111,10 @@ export default function ChatWizard({ steps, ctx, closing, onFinish, onClose }) {
         {!typing && step && (
           <motion.div
             key={step.id}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, transition: { duration: 0.08 } }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            exit={{ opacity: 0, x: -48, transition: { duration: 0.22, ease: 'easeIn' } }}
+            transition={{ type: 'spring', stiffness: 320, damping: 30 }}
             className="mt-3"
           >
             <StepInput step={step} answer={answer} ctx={ctx} answers={answersRef.current} prompt={lastBot} />
@@ -119,7 +122,7 @@ export default function ChatWizard({ steps, ctx, closing, onFinish, onClose }) {
         )}
         {finished && !typing && (
           <motion.div key="done" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-3">
-            <Button className="w-full" onClick={onClose}>
+            <Button size="lg" className="w-full" onClick={onClose}>
               Done
             </Button>
           </motion.div>
@@ -131,11 +134,22 @@ export default function ChatWizard({ steps, ctx, closing, onFinish, onClose }) {
 }
 
 function StepInput({ step, answer, ctx, answers, prompt }) {
+  const [picked, setPicked] = useState(null)
+  const speech = useSpeech({ onFinal: (text) => answer(text, text) })
+
+  // Light up the tapped answer for a beat before moving on, so the choice registers.
+  const choose = (key, value, label) => {
+    if (picked !== null) return
+    setPicked(key)
+    navigator.vibrate?.(6)
+    setTimeout(() => answer(value, label), FLASH_MS)
+  }
+
   const skip = step.skippable && (
     <button
       type="button"
       onClick={() => answer(null, step.skipLabel ?? 'Skip for now')}
-      className="mx-auto mt-1 flex h-11 items-center rounded-lg px-4 text-sm font-medium text-muted-foreground active:bg-muted"
+      className="mx-auto mt-1 flex h-11 items-center rounded-full px-4 text-sm font-medium text-muted-foreground transition-all duration-300 ease-spring active:scale-[0.96]"
     >
       {step.skipLabel ?? 'Skip for now'}
     </button>
@@ -147,14 +161,18 @@ function StepInput({ step, answer, ctx, answers, prompt }) {
     return (
       <div className="flex flex-col gap-2">
         <div className="grid grid-cols-2 gap-2">
-          {step.options.map((o) => (
-            <OptionButton
-              key={String(o.value)}
-              emoji={o.emoji}
-              label={o.label}
-              onClick={() => answer(o.value, `${o.emoji ? o.emoji + ' ' : ''}${o.label}`)}
-            />
-          ))}
+          {step.options.map((o) => {
+            const key = String(o.value)
+            return (
+              <OptionButton
+                key={key}
+                emoji={o.emoji}
+                label={o.label}
+                selected={picked === key}
+                onClick={() => choose(key, o.value, `${o.emoji ? o.emoji + ' ' : ''}${o.label}`)}
+              />
+            )
+          })}
         </div>
         {skip}
       </div>
@@ -166,21 +184,35 @@ function StepInput({ step, answer, ctx, answers, prompt }) {
       {step.chips?.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {step.chips.map((c) => (
-            <Chip key={c} onClick={() => answer(c, c)}>
+            <Chip key={c} active={picked === c} onClick={() => choose(c, c, c)}>
               {c}
             </Chip>
           ))}
         </div>
       )}
-      <SheetField
-        id={`chat-${step.id}`}
-        label={prompt.split('\n').pop()}
-        placeholder={step.placeholder}
-        multiline={step.multiline}
-        saveLabel="Send"
-        clearAfter
-        onCommit={(text) => answer(text, text)}
-      />
+      {speech.listening && (
+        <div className="flex justify-end">
+          <div className="flex max-w-[85%] items-center gap-2.5 rounded-3xl rounded-br-lg border border-primary/40 bg-primary/15 px-4 py-3 text-[15px] text-foreground">
+            <SoundWave />
+            <span className={speech.interim ? '' : 'text-muted-foreground'}>{speech.interim || 'Listening…'}</span>
+          </div>
+        </div>
+      )}
+      <div className="flex items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <SheetField
+            id={`chat-${step.id}`}
+            label={prompt.split('\n').pop()}
+            placeholder={step.placeholder}
+            multiline={step.multiline}
+            saveLabel="Send"
+            clearAfter
+            onCommit={(text) => answer(text, text)}
+          />
+        </div>
+        {speech.supported && <MicButton listening={speech.listening} onClick={speech.toggle} />}
+      </div>
+      {speech.error && <p className="px-2 text-sm text-muted-foreground">{speech.error}</p>}
       {skip}
     </div>
   )
@@ -189,7 +221,7 @@ function StepInput({ step, answer, ctx, answers, prompt }) {
 function TypingDots() {
   return (
     <div className="flex justify-start">
-      <div className="flex gap-1 rounded-2xl rounded-bl-md bg-panel px-3.5 py-3.5 shadow-xs ring-1 ring-foreground/10">
+      <div className={cx('flex gap-1 rounded-3xl rounded-bl-lg px-4 py-4', GLASS)}>
         {[0, 1, 2].map((i) => (
           <motion.span
             key={i}

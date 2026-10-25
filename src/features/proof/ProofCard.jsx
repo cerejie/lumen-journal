@@ -21,7 +21,8 @@ const formatWhen = (ts) =>
     year: new Date(ts).getFullYear() === new Date().getFullYear() ? undefined : 'numeric',
   })
 
-const SURFACE = 'rounded-xl bg-primary-soft p-5 ring-1 ring-primary/15'
+const SURFACE =
+  'relative overflow-hidden rounded-3xl border border-primary/25 bg-white/70 p-6 shadow-[var(--shadow-glass),var(--shadow-glass-inner),var(--shadow-glow)] backdrop-blur-2xl dark:bg-zinc-900/60'
 
 export default function ProofCard({ evidence, shuffle = 0, onAdd }) {
   const [offset, setOffset] = useState(0)
@@ -47,8 +48,8 @@ export default function ProofCard({ evidence, shuffle = 0, onAdd }) {
   if (!item) {
     return (
       <section className={SURFACE}>
-        <p className="font-proof text-xl leading-snug text-balance">Your doubts forget what you've done. This remembers.</p>
-        <Button className="mt-4" onClick={onAdd}>
+        <p className="font-proof text-[22px] leading-snug text-balance">Your doubts forget what you've done. This remembers.</p>
+        <Button size="lg" className="mt-5" onClick={onAdd}>
           <Plus /> Add proof
         </Button>
       </section>
@@ -72,11 +73,11 @@ export default function ProofCard({ evidence, shuffle = 0, onAdd }) {
             <Icon className="size-4" aria-hidden />
             {meta.label}, {formatWhen(item.createdAt)}
           </p>
-          <blockquote className="font-proof mt-2 text-xl leading-snug text-balance">{item.text}</blockquote>
+          <blockquote className="font-proof mt-3 text-[22px] leading-snug text-balance">{item.text}</blockquote>
           {item.detail && <p className="mt-1.5 text-[15px] text-muted-foreground">{item.detail}</p>}
         </motion.div>
       </AnimatePresence>
-      <div className="mt-4 flex gap-2">
+      <div className="mt-5 flex gap-2">
         {evidence.length > 1 && (
           <Button variant="outline" size="sm" onClick={another}>
             <Shuffle /> Another

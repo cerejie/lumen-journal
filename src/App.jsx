@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import Ambient from './components/Ambient'
 import BottomNav from './components/BottomNav'
 import PullIndicator from './components/PullIndicator'
 import Splash from './components/Splash'
@@ -216,16 +217,17 @@ export default function App() {
 
   // App shell from Moti: the document never scrolls. Top bar and tab bar stay put; only the content scrolls.
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-app text-foreground">
-      <header className="flex min-h-14 shrink-0 items-center gap-3 border-b border-border bg-panel px-4 pt-[env(safe-area-inset-top)]">
-        <h1 className="min-w-0 truncate text-lg font-semibold">{headers[tab].title}</h1>
+    <div className="flex h-dvh flex-col overflow-hidden text-foreground">
+      <Ambient period={period} />
+      <header className="z-20 flex min-h-14 shrink-0 items-center gap-3 border-b border-white/30 bg-white/50 px-5 pt-[env(safe-area-inset-top)] backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/40">
+        <h1 className="min-w-0 truncate text-lg font-semibold tracking-tight">{headers[tab].title}</h1>
         <p className="ml-auto flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground">
           <PeriodIcon className="size-4 text-primary" aria-hidden />
           {date}
         </p>
       </header>
 
-      <main ref={scrollRef} {...pull.handlers} className="min-h-0 flex-1 overflow-y-auto overscroll-none pb-[calc(3.75rem+env(safe-area-inset-bottom))]">
+      <main ref={scrollRef} {...pull.handlers} className="scroll-thin min-h-0 flex-1 overflow-y-auto overscroll-none pb-[calc(5.5rem+max(1.5rem,env(safe-area-inset-bottom)))] scroll-pb-[calc(6.5rem+max(1.5rem,env(safe-area-inset-bottom)))]">
         <PullIndicator pull={pull} />
         <div className="mx-auto w-full max-w-xl px-4 pt-5 pb-8">
           {/* Every tab stays mounted (the chat keeps its place); only the active one is shown, with no exit animation. */}

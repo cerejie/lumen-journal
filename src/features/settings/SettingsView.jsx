@@ -9,7 +9,7 @@ const THEMES = [
   { id: 'dark', label: 'Dark', icon: Moon },
 ]
 
-const ROW = 'flex min-h-13 w-full items-center gap-3 px-4 text-left text-[15px] font-medium transition-colors active:bg-muted'
+const ROW = 'flex min-h-14 w-full items-center gap-3 px-5 text-left text-[15px] font-medium transition-all duration-300 ease-spring active:scale-[0.98] active:bg-black/5 dark:active:bg-white/5'
 
 export default function SettingsView({ settings, setSettings, exportData, importData, resetAll }) {
   const install = useInstallPrompt()
@@ -59,7 +59,7 @@ export default function SettingsView({ settings, setSettings, exportData, import
 
       <div>
         <GroupLabel>Appearance</GroupLabel>
-        <div className="grid grid-cols-3 gap-1 rounded-lg bg-muted p-1" role="radiogroup" aria-label="Appearance">
+        <div className="grid grid-cols-3 gap-1 rounded-full border border-white/50 bg-white/50 p-1 backdrop-blur-xl dark:border-white/10 dark:bg-white/5" role="radiogroup" aria-label="Appearance">
           {THEMES.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -68,8 +68,8 @@ export default function SettingsView({ settings, setSettings, exportData, import
               aria-checked={settings.theme === id}
               onClick={() => setSettings((s) => ({ ...s, theme: id }))}
               className={cx(
-                'flex h-9 items-center justify-center gap-1.5 rounded-md text-sm font-medium transition-all',
-                settings.theme === id ? 'bg-panel text-foreground shadow-xs ring-1 ring-foreground/10' : 'text-muted-foreground'
+                'flex h-10 items-center justify-center gap-1.5 rounded-full text-sm font-medium transition-all duration-300 ease-spring active:scale-[0.96]',
+                settings.theme === id ? 'bg-white text-foreground shadow-[0_2px_8px_rgba(0,0,0,0.12)] dark:bg-white/15' : 'text-muted-foreground'
               )}
             >
               <Icon className="size-4" aria-hidden /> {label}

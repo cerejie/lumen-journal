@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowUpRight, CheckCircle2, ChevronRight, Dices, Inbox, Plus, RotateCcw, Trash2 } from 'lucide-react'
-import { Button, Card, FieldSheet, Group, GroupLabel, Sheet, SheetField, Toast, cx, useToast } from '../../components/ui'
-import { DONE_MESSAGES, PIVOT_MESSAGES, pick } from '../../lib/constants'
+import Celebrate from '../../components/Celebrate'
+import { Button, Card, FieldSheet, GLASS, Group, GroupLabel, PRESS, Sheet, SheetField, Toast, cx, useToast } from '../../components/ui'
+import { DONE_MESSAGES, pick } from '../../lib/constants'
 import { dayKey } from '../../lib/time'
 
 export default function FocusView({ tasks, actions }) {
@@ -14,6 +15,34 @@ export default function FocusView({ tasks, actions }) {
   const [dumpOpen, setDumpOpen] = useState(false)
   const [captureOpen, setCaptureOpen] = useState(false)
   const [capture, setCapture] = useState('')
+  const [celebrating, setCelebrating] = useState(false)
+  const [leaving, setLeaving] = useState('done') // how the current card exits: 'done' lifts away, 'pivot' glides right
+
+  const complete = () => {
+    if (celebrating) return
+    setLeaving('done')
+    setCelebrating(true)
+    navigator.vibrate?.([12, 40, 18])
+    setTimeout(() => {
+      actions.completeNow()
+      setCelebrating(false)
+      setToast(pick(DONE_MESSAGES))
+    }, 850)
+  }
+
+  const pivot = () => {
+    setLeaving('pivot')
+    // Let React render the exit direction before the card unmounts.
+    requestAnimationFrame(() => {
+      actions.pivotNow()
+      setToast('Saved for later. Zero guilt!')
+    })
+  }
+
+  const exitFor = {
+    done: { opacity: 0, y: -24, scale: 0.94, transition: { duration: 0.3, ease: 'easeIn' } },
+    pivot: { opacity: 0, x: 160, rotate: 2, transition: { duration: 0.38, ease: [0.4, 0, 0.2, 1] } },
+  }
 
   const saveCapture = () => {
     actions.addTask(capture.trim())
@@ -28,40 +57,59 @@ export default function FocusView({ tasks, actions }) {
 
       <div>
         <GroupLabel>{winsToday > 0 ? `Now (${winsToday} done today)` : 'Now'}</GroupLabel>
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence mode="wait" initial={false} custom={leaving}>
           {nowTask ? (
             <motion.div
               key={nowTask.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, transition: { duration: 0.1 } }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
+              custom={leaving}
+              variants={exitFor}
+              initial={{ opacity: 0, y: 24, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, x: 0, scale: 1, rotate: 0 }}
+              exit={leaving}
+              transition={{ type: 'spring', stiffness: 260, damping: 26 }}
             >
-              <Card className="flex flex-col gap-5">
-                <p className="text-2xl leading-snug font-semibold tracking-tight text-balance break-words">{nowTask.text}</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    onClick={() => {
-                      actions.completeNow()
-                      setToast(pick(DONE_MESSAGES))
-                    }}
-                  >
-                    <CheckCircle2 /> Done 🎉
+              <div
+                className={cx(
+                  'relative flex flex-col gap-7 rounded-3xl p-6 transition-[background-color,border-color] duration-300',
+                  GLASS,
+                  celebrating ? '!border-emerald-400/60 shadow-[0_0_48px_rgba(16,185,129,0.35)]' : 'breathe',
+                  leaving === 'pivot' && 'border-violet-300/50 bg-violet-200/40 dark:bg-violet-500/15'
+                )}
+              >
+                {celebrating && <Celebrate />}
+                <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <span className="relative flex size-2">
+                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-60 motion-reduce:hidden" />
+                    <span className="relative inline-flex size-2 rounded-full bg-primary" />
+                  </span>
+                  Now
+                </p>
+                <p
+                  className={cx(
+                    'text-3xl leading-tight font-semibold tracking-tight text-balance break-words transition-opacity duration-300',
+                    celebrating && 'opacity-30'
+                  )}
+                >
+                  {nowTask.text}
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button variant="emerald" size="xl" onClick={complete} disabled={celebrating}>
+                    <CheckCircle2 className="size-5" /> Done 🎉
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      actions.pivotNow()
-                      setToast(pick(PIVOT_MESSAGES))
-                    }}
-                  >
-                    <RotateCcw /> Pivot
+                  <Button variant="outline" size="xl" className="rounded-full" onClick={pivot} disabled={celebrating}>
+                    <RotateCcw className="size-5" /> Pivot 🔄
                   </Button>
                 </div>
-              </Card>
+              </div>
             </motion.div>
           ) : (
-            <motion.div key="empty" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, transition: { duration: 0.1 } }}>
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.12 } }}
+              transition={{ type: 'spring', stiffness: 260, damping: 26 }}
+            >
               <Card className="flex flex-col gap-4">
                 <SheetField
                   id="now-task"
@@ -97,7 +145,7 @@ export default function FocusView({ tasks, actions }) {
         <button
           type="button"
           onClick={() => setDumpOpen(true)}
-          className="flex min-h-13 w-full items-center gap-3 px-4 text-left text-[15px] font-medium transition-colors active:bg-muted"
+          className="flex min-h-13 w-full items-center gap-3 px-4 text-left text-[15px] font-medium transition-all duration-300 ease-spring active:scale-[0.98] active:bg-black/5 dark:active:bg-white/5"
         >
           <Inbox className="size-5 text-muted-foreground" aria-hidden />
           Brain dump
@@ -107,7 +155,7 @@ export default function FocusView({ tasks, actions }) {
         <button
           type="button"
           onClick={() => setCaptureOpen(true)}
-          className="flex min-h-13 w-full items-center gap-3 px-4 text-left text-[15px] font-medium text-primary transition-colors active:bg-muted"
+          className="flex min-h-13 w-full items-center gap-3 px-4 text-left text-[15px] font-medium text-primary transition-all duration-300 ease-spring active:scale-[0.98] active:bg-black/5 dark:active:bg-white/5"
         >
           <Plus className="size-5" aria-hidden />
           Capture a thought
@@ -149,7 +197,7 @@ export default function FocusView({ tasks, actions }) {
                   aria-label="Delete"
                   onClick={() => actions.removeTask(t.id)}
                   className={cx(
-                    'relative grid size-9 shrink-0 place-items-center rounded-md text-muted-foreground transition-all after:absolute after:-inset-1 active:translate-y-px active:bg-muted'
+                    'relative grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground transition-all duration-300 ease-spring after:absolute after:-inset-1 active:scale-90'
                   )}
                 >
                   <Trash2 className="size-4" />

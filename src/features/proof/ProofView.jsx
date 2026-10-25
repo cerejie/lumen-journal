@@ -7,7 +7,7 @@ import { EVIDENCE_KINDS, kindMeta } from '../../lib/constants'
 const shortDate = (ts) => new Date(ts).toLocaleDateString([], { month: 'short', day: 'numeric' })
 
 const ICON_BUTTON =
-  'relative grid size-9 shrink-0 place-items-center rounded-md transition-all after:absolute after:-inset-1 active:translate-y-px active:bg-muted'
+  'relative grid size-9 shrink-0 place-items-center rounded-full transition-all duration-300 ease-spring after:absolute after:-inset-1 active:scale-90'
 
 export default function ProofView({ evidence, actions, addSignal, shuffle }) {
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -58,7 +58,7 @@ export default function ProofView({ evidence, actions, addSignal, shuffle }) {
                   key={k.id}
                   type="button"
                   onClick={() => openAdd(k.id)}
-                  className="flex min-h-13 w-full items-center gap-3 px-4 py-3 text-left text-[15px] font-medium transition-colors active:bg-muted"
+                  className="flex min-h-13 w-full items-center gap-3 px-4 py-3 text-left text-[15px] font-medium transition-all duration-300 ease-spring active:scale-[0.98] active:bg-black/5 dark:active:bg-white/5"
                 >
                   <Icon className="size-5 shrink-0 text-primary" aria-hidden />
                   {k.prompt}
@@ -135,7 +135,7 @@ export default function ProofView({ evidence, actions, addSignal, shuffle }) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={meta.prompt}
-          className="min-h-28 rounded-xl border-2 border-primary px-4 py-3 focus-visible:border-primary focus-visible:ring-0"
+          className="min-h-28 rounded-2xl border-2 border-primary px-4 py-3 focus-visible:border-primary focus-visible:ring-0"
         />
         <div className="flex flex-col gap-2 pt-1">
           <Label htmlFor="proof-detail" className="text-muted-foreground">

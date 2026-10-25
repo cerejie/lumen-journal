@@ -86,13 +86,20 @@ Edit `src/features/journal/flows.jsx`. Each step is data:
 | `lumen:evidence` | `[{ id, kind: 'win' \| 'praise' \| 'skill' \| 'built' \| 'overcame', text, detail, pinned, createdAt }]` |
 | `lumen:settings` | `{ name, theme: 'system' \| 'light' \| 'dark' }` |
 
+## Look and feel
+
+- **Ambient mesh:** a slow-drifting gradient behind everything that follows the time of day (amber and peach mornings, azure and mint afternoons, twilight violet evenings). Motion stops with Reduce Motion.
+- **Glass surfaces:** frosted cards (`GLASS` in `src/components/ui.jsx`), rounded-3xl cards, rounded-2xl sub-components, pill chips. Every tap squeezes to 0.96 and springs back (`PRESS`).
+- **Floating tab bar:** a dark glass pill with a spring-sliding indicator, 24px above the screen edge (or just above the home indicator).
+- **Rewards:** Done bursts a ring with confetti and a check pop; Pivot glides the card right in lavender ("Saved for later. Zero guilt!"); going to bed washes the screen in twilight with a glowing moon, waking in a sunrise.
+- **Voice:** a mic beside chat questions and inside the input drawer, using the browser's speech recognition (`src/lib/speech.js`). Hidden where the browser has none.
+
 ## Mobile behaviour
 
-- **App shell (from Moti):** fixed top bar, docked tab bar, and the document never scrolls; only the content area does. This stops iOS from leaving the tab bar stranded after the keyboard closes.
+- **App shell:** fixed top bar, floating tab bar, and the document never scrolls; only the content area does. This stops iOS from leaving the tab bar stranded after the keyboard closes.
 - **Input drawer (from TARTAR):** on touch devices every text field is a tap target that opens a bottom sheet sitting on top of the keyboard (`SheetField` / `FieldSheet` in `src/components/ui.jsx`, keyboard tracking in `src/lib/keyboard.js`). On desktop the same field is an inline input.
 - **Pull to refresh (from TARTAR):** pull the content down at the top; the badge turns as you pull and spins while it reloads saved data and shows a different proof (`src/lib/pull.js`).
 - **Splash:** native launch images for iPhone/iPad in light and dark (`public/splash/`), then an interactive splash with the mark and one of your proof items. Tap or swipe up to go straight in; shown once per launch.
-- **Controls:** `Input`, `Textarea`, `InputGroup`, `Label` and `Button` use the same classes and tokens as TARTAR and Moti's `components/ui`.
 
 ## Design workflow
 

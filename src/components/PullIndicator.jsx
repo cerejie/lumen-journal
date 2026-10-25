@@ -13,7 +13,7 @@ export default function PullIndicator({ pull }) {
     >
       <span
         className={cx(
-          'mb-2 flex size-9 items-center justify-center rounded-full bg-panel shadow-sm ring-1 ring-foreground/10 [&_svg]:size-4',
+          'mb-2 flex size-9 items-center justify-center rounded-full border border-white/50 bg-white/80 shadow-[var(--shadow-glass)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/80 [&_svg]:size-4',
           pull.ready || pull.refreshing ? 'text-primary' : 'text-muted-foreground',
           pull.refreshing && '[&_svg]:animate-spin'
         )}
