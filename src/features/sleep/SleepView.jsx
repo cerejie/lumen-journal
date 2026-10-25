@@ -77,7 +77,6 @@ export default function SleepView({ sleep, actions, now, accent }) {
             <Card className="p-6">
               <BedDouble className={cx('size-8', accent.text)} />
               <p className="mt-3 text-lg font-semibold">Winding down?</p>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">Tap once when you get into bed. That's it.</p>
               <Button className="mt-5 w-full" onClick={actions.goToBed}>
                 <Moon className="size-5" /> Going to Bed
               </Button>
@@ -86,7 +85,7 @@ export default function SleepView({ sleep, actions, now, accent }) {
                 onClick={() => setShowManual((v) => !v)}
                 className="mt-2 min-h-11 w-full text-sm text-zinc-500 dark:text-zinc-400"
               >
-                Forgot to tap? Add last night roughly
+                Forgot to tap? Add last night
               </button>
               <AnimatePresence>
                 {showManual && (
@@ -153,7 +152,7 @@ export default function SleepView({ sleep, actions, now, accent }) {
             {logs.slice(0, 30).map((l) => (
               <div key={l.id} className="flex items-center gap-3 py-2 pr-1 pl-4">
                 <span className="w-7 text-center text-xl" aria-label={l.quality ?? 'not rated'}>
-                  {qualityEmoji(l.quality) || <Moon className="mx-auto size-4 text-zinc-400" />}
+                  {qualityEmoji(l.quality) || <Moon className="mx-auto size-4 text-zinc-500 dark:text-zinc-400" />}
                 </span>
                 <div className="min-w-0 flex-1 py-1">
                   <p className="text-[15px] font-semibold">{formatDay(l.wakeAt)}</p>
@@ -166,7 +165,7 @@ export default function SleepView({ sleep, actions, now, accent }) {
                   type="button"
                   aria-label={`Delete ${formatDay(l.wakeAt)}`}
                   onClick={() => actions.deleteLog(l.id)}
-                  className="grid size-11 place-items-center rounded-xl text-zinc-400 transition active:scale-90"
+                  className="grid size-11 place-items-center rounded-xl text-zinc-500 dark:text-zinc-400 transition active:scale-90"
                 >
                   <Trash2 className="size-4" />
                 </button>

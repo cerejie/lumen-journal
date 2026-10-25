@@ -6,6 +6,7 @@ import JournalView, { PERIOD_ICONS } from './features/journal/JournalView'
 import FocusView from './features/focus/FocusView'
 import SleepView from './features/sleep/SleepView'
 import SettingsView from './features/settings/SettingsView'
+import ProofView from './features/proof/ProofView'
 import { PERIODS } from './lib/constants'
 import { useStoredState } from './lib/storage'
 import { useTheme } from './lib/theme'
@@ -26,6 +27,8 @@ export default function App() {
   const [tasks, setTasks] = useStoredState('tasks', [])
   const [sleep, setSleep] = useStoredState('sleep', DEFAULT_SLEEP)
   const [settings, setSettings] = useStoredState('settings', DEFAULT_SETTINGS)
+  const [evidence, setEvidence] = useStoredState('evidence', [])
+  const [proofSignal, setProofSignal] = useState(0)
   useTheme(settings.theme)
 
   /* ---------- sleep actions ---------- */
@@ -77,6 +80,22 @@ export default function App() {
     }
   }, [setTasks])
 
+  /* ---------- proof (evidence bank) ---------- */
+  const evidenceActions = useMemo(
+    () => ({
+      addEvidence: ({ kind, text, detail = null }) =>
+        setEvidence((list) => [{ id: uid(), kind, text, detail, pinned: false, createdAt: Date.now() }, ...list]),
+      removeEvidence: (id) => setEvidence((list) => list.filter((e) => e.id !== id)),
+      togglePin: (id) => setEvidence((list) => list.map((e) => (e.id === id ? { ...e, pinned: !e.pinned } : e))),
+    }),
+    [setEvidence]
+  )
+
+  const openAddProof = () => {
+    setTab('proof')
+    setProofSignal((n) => n + 1)
+  }
+
   /* ---------- context handed to the reflection engine ---------- */
   const lastLog = sleep.logs[0]
   const ctx = {
@@ -89,12 +108,13 @@ export default function App() {
     rateSleep: sleepActions.rateSleep,
     addTasks: taskActions.addTasks,
     setNow: (text) => taskActions.addTask(text, { now: true }),
+    addEvidence: evidenceActions.addEvidence,
   }
 
   const saveEntry = ({ date, period: p, answers }) =>
     setJournal((list) => [...list, { id: uid(), date, period: p, createdAt: Date.now(), answers }])
 
-  const exportData = () => ({ app: 'lumen', version: 1, exportedAt: new Date().toISOString(), journal, tasks, sleep, settings })
+  const exportData = () => ({ app: 'lumen', version: 1, exportedAt: new Date().toISOString(), journal, tasks, sleep, settings, evidence })
 
   const importData = (data) => {
     if (!data || data.app !== 'lumen' || !Array.isArray(data.journal) || !Array.isArray(data.tasks) || !Array.isArray(data.sleep?.logs)) {
@@ -104,6 +124,7 @@ export default function App() {
     setTasks(data.tasks)
     setSleep({ current: data.sleep.current ?? null, logs: data.sleep.logs })
     if (data.settings) setSettings({ ...DEFAULT_SETTINGS, ...data.settings })
+    if (Array.isArray(data.evidence)) setEvidence(data.evidence)
   }
 
   const resetAll = () => {
@@ -111,21 +132,33 @@ export default function App() {
     setTasks([])
     setSleep(DEFAULT_SLEEP)
     setSettings(DEFAULT_SETTINGS)
+    setEvidence([])
   }
 
   const PeriodIcon = PERIOD_ICONS[period]
   const date = formatLongDate(now)
   const headers = {
-    journal: { title: `${meta.greeting}${settings.name ? `, ${settings.name}` : ''}`, subtitle: date, icon: PeriodIcon },
-    focus: { title: 'Focus', subtitle: 'One thing at a time' },
-    sleep: { title: 'Sleep', subtitle: 'One tap at night, one in the morning' },
-    settings: { title: 'Settings', subtitle: 'Everything stays on this device' },
+    journal: { title: `${meta.greeting}${settings.name ? `, ${settings.name}` : ''}` },
+    proof: { title: 'Proof' },
+    focus: { title: 'Focus' },
+    sleep: { title: 'Sleep' },
+    settings: { title: 'Settings' },
   }
 
   const views = {
     journal: (
-      <JournalView period={period} now={now} entries={journal} onSaveEntry={saveEntry} ctx={ctx} name={settings.name} />
+      <JournalView
+        period={period}
+        now={now}
+        entries={journal}
+        onSaveEntry={saveEntry}
+        ctx={ctx}
+        name={settings.name}
+        evidence={evidence}
+        onAddProof={openAddProof}
+      />
     ),
+    proof: <ProofView evidence={evidence} actions={evidenceActions} accent={accent} addSignal={proofSignal} />,
     focus: <FocusView tasks={tasks} actions={taskActions} accent={accent} />,
     sleep: <SleepView sleep={sleep} actions={sleepActions} now={now} accent={accent} />,
     settings: (
@@ -168,7 +201,7 @@ export default function App() {
               animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
               transition={active ? { duration: 0.22, ease: [0.22, 1, 0.36, 1] } : { duration: 0 }}
             >
-              <PageHeader title={h.title} subtitle={h.subtitle} icon={h.icon} accent={accent.text} />
+              <PageHeader title={h.title} subtitle={date} icon={PeriodIcon} accent={accent.text} />
               {view}
             </motion.section>
           )

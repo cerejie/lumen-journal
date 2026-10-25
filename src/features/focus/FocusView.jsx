@@ -80,7 +80,6 @@ export default function FocusView({ tasks, actions, accent }) {
                   <RotateCcw className="size-5" /> Pivot
                 </Button>
               </div>
-              <p className="mt-3 text-center text-[13px] text-zinc-500 dark:text-zinc-400">Pivot saves it for later. No guilt.</p>
             </Card>
           </motion.div>
         ) : (
@@ -94,8 +93,7 @@ export default function FocusView({ tasks, actions, accent }) {
               <p className="flex items-center gap-2 text-[13px] font-semibold text-zinc-500 dark:text-zinc-400">
                 <span className={cx('size-2 rounded-full', accent.solid)} /> Now
               </p>
-              <p className="mt-3 text-lg font-semibold">Nothing here. That's a fine place to be.</p>
-              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">When you're ready, pick one small thing.</p>
+              <p className="mt-3 text-lg font-semibold">Nothing here yet.</p>
               <div className="mt-5 flex items-center gap-2 rounded-2xl border border-zinc-900/[0.08] bg-white p-1.5 pl-4 dark:border-white/10 dark:bg-zinc-900">
                 <input
                   value={draft}
@@ -154,7 +152,7 @@ export default function FocusView({ tasks, actions, accent }) {
       </div>
 
       <BottomSheet open={sheet === 'capture'} onClose={() => setSheet(null)} title="Quick capture">
-        <p className="mb-3 text-sm text-zinc-500 dark:text-zinc-400">Get it out of your head. It goes straight to the brain dump.</p>
+        
         <div className="flex items-center gap-2 rounded-2xl border border-zinc-200/80 bg-white p-1.5 pl-4 dark:border-white/10 dark:bg-zinc-800">
           <input
             autoFocus
@@ -172,9 +170,9 @@ export default function FocusView({ tasks, actions, accent }) {
       </BottomSheet>
 
       <BottomSheet open={sheet === 'dump'} onClose={() => setSheet(null)} title="Brain dump">
-        <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-400">No order, no deadlines. Just parked thoughts.</p>
+        
         {later.length === 0 ? (
-          <p className="py-6 text-center text-sm text-zinc-400">Empty and peaceful. 🌿</p>
+          <p className="py-6 text-center text-sm text-zinc-500 dark:text-zinc-400">Empty and peaceful. 🌿</p>
         ) : (
           <ul className="flex flex-col gap-2">
             <AnimatePresence initial={false}>
@@ -202,7 +200,7 @@ export default function FocusView({ tasks, actions, accent }) {
                     type="button"
                     onClick={() => actions.removeTask(t.id)}
                     aria-label="Delete"
-                    className="grid size-11 place-items-center rounded-xl text-zinc-400 transition active:scale-90"
+                    className="grid size-11 place-items-center rounded-xl text-zinc-500 dark:text-zinc-400 transition active:scale-90"
                   >
                     <Trash2 className="size-4" />
                   </button>

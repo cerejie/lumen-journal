@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Moon, Plus, Sparkles, Sun, Sunrise } from 'lucide-react'
 import ChatWizard from './ChatWizard'
+import ProofCard from '../proof/ProofCard'
 import { buildFlows } from './flows'
 import { Button, Card, cx } from '../../components/ui'
 import { PERIODS } from '../../lib/constants'
@@ -10,7 +11,7 @@ import { dayKey, formatTime } from '../../lib/time'
 export const PERIOD_ICONS = { morning: Sunrise, afternoon: Sun, evening: Moon }
 const ORDER = ['morning', 'afternoon', 'evening']
 
-export default function JournalView({ period, now, entries, onSaveEntry, ctx, name }) {
+export default function JournalView({ period, now, entries, onSaveEntry, ctx, name, evidence, onAddProof }) {
   const flows = useMemo(() => buildFlows({ name }), [name])
   const flow = flows[period]
   const accent = PERIODS[period].accent
@@ -30,10 +31,8 @@ export default function JournalView({ period, now, entries, onSaveEntry, ctx, na
   }, [period, today])
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="-mt-2 px-1 text-[15px] text-zinc-500 dark:text-zinc-400">
-        {flow.title} <span className="text-zinc-400 dark:text-zinc-500">· skip anything</span>
-      </p>
+    <div className="flex flex-col gap-6">
+      <ProofCard evidence={evidence} accent={accent} onAdd={onAddProof} />
 
       {session ? (
         <ChatWizard
@@ -93,7 +92,7 @@ function EntrySummary({ entry, flow }) {
     <dl className="flex flex-col gap-2">
       {lines.map(([label, value]) => (
         <div key={label}>
-          <dt className="text-xs font-medium text-zinc-400">{label}</dt>
+          <dt className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{label}</dt>
           <dd className="text-[15px] whitespace-pre-line">{value}</dd>
         </div>
       ))}

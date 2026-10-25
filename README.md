@@ -1,9 +1,11 @@
 # Lumen — Gentle Journal & Focus
 
-A hyper-minimal, mobile-first PWA for ADHD brains that freeze on perfectionism. No streaks, no missed days, no blank forms — just one small question at a time.
+A minimal, mobile-first PWA for ADHD brains that freeze on perfectionism and fight impostor syndrome. No streaks, no missed days, no blank forms. One small question at a time, and a running record of what you've actually done.
 
 ## Features
 
+- **Proof (evidence bank)**: log wins, kind words, skills, things you built and hard things you got through. Your own evidence, not generic quotes. Star items to see them more often.
+- **Daily proof card**: the top of Journal shows one real item from your bank each day, with *Another* to shuffle. Evening "tiny wins" are saved to Proof automatically.
 - **Adaptive reflection chat** — detects the time of day and shows only that check-in:
   - Morning (06:00–11:59): sleep review → how you feel → one intention (optionally becomes your NOW task)
   - Afternoon (12:00–16:59): battery + brain-fog taps → optional micro note
@@ -58,6 +60,7 @@ src/
   features/journal/      ChatWizard engine + flow definitions per period
   features/focus/        NOW task engine + brain dump
   features/sleep/        sleep tracker + log
+  features/proof/        evidence bank + daily proof card
   features/settings/     preferences + backup
 ```
 
@@ -80,4 +83,9 @@ Edit `src/features/journal/flows.jsx`. Each step is data:
 | `lumen:journal` | `[{ id, date: 'YYYY-MM-DD', period, createdAt, answers }]` — a day runs 06:00→05:59 |
 | `lumen:tasks` | `[{ id, text, status: 'now' \| 'later' \| 'done', createdAt, doneAt }]` |
 | `lumen:sleep` | `{ current: { bedAt } \| null, logs: [{ id, bedAt, wakeAt, quality }] }` |
+| `lumen:evidence` | `[{ id, kind: 'win' \| 'praise' \| 'skill' \| 'built' \| 'overcame', text, detail, pinned, createdAt }]` |
 | `lumen:settings` | `{ name, theme: 'system' \| 'light' \| 'dark' }` |
+
+## Design workflow
+
+The [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) skill is vendored in `.claude/skills/ui-ux-pro-max`, so Claude Code picks it up in this repo. Run its pre-delivery checklist (`references/pro-rules.md`) before shipping UI changes.

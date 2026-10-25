@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion'
-import { CheckCircle2, MessageSquare, Moon, Settings } from 'lucide-react'
+import { CheckCircle2, MessageSquare, Moon, Settings, ShieldCheck } from 'lucide-react'
 import { cx } from './ui'
 
 export const TABS = [
   { id: 'journal', label: 'Journal', icon: MessageSquare },
+  { id: 'proof', label: 'Proof', icon: ShieldCheck },
   { id: 'focus', label: 'Focus', icon: CheckCircle2 },
   { id: 'sleep', label: 'Sleep', icon: Moon },
   { id: 'settings', label: 'Settings', icon: Settings },
@@ -23,7 +24,7 @@ export default function BottomNav({ tab, onChange, accent }) {
               aria-current={active ? 'page' : undefined}
               className={cx(
                 'relative flex flex-1 flex-col items-center gap-0.5 rounded-2xl py-2 text-[11px] font-semibold transition active:scale-95',
-                active ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'
+                active ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'
               )}
             >
               {active && (

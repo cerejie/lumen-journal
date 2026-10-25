@@ -61,7 +61,7 @@ export function OptionButton({ emoji, label, onClick, className }) {
 /** iOS-style large title. One per screen. */
 export function PageHeader({ title, subtitle, icon: Icon, accent, action }) {
   return (
-    <header className="flex items-end justify-between gap-3 px-1 pb-5">
+    <header className="flex items-end justify-between gap-3 px-1 pb-6">
       <div className="min-w-0">
         {subtitle && (
           <p className="flex items-center gap-1.5 text-[13px] font-medium text-zinc-500 dark:text-zinc-400">

@@ -1,3 +1,5 @@
+import { Mountain, Quote, Rocket, Trophy, Wrench } from 'lucide-react'
+
 export const PERIODS = {
   morning: {
     label: 'Morning',
@@ -61,3 +63,50 @@ export const PIVOT_MESSAGES = [
 ]
 
 export const pick = (list) => list[Math.floor(Math.random() * list.length)]
+
+/* ---------- Proof (evidence bank against impostor syndrome) ---------- */
+
+export const EVIDENCE_KINDS = [
+  {
+    id: 'win',
+    label: 'Win',
+    plural: 'Wins',
+    icon: Trophy,
+    prompt: 'What went well?',
+    placeholder: 'Fixed a bug nobody else could find',
+  },
+  {
+    id: 'praise',
+    label: 'Kind words',
+    plural: 'Kind words',
+    icon: Quote,
+    prompt: 'What did someone say about you or your work?',
+    placeholder: 'Client said the system saves them hours every week',
+  },
+  {
+    id: 'skill',
+    label: 'Skill',
+    plural: 'Skills',
+    icon: Wrench,
+    prompt: 'What can you do that you once couldn’t?',
+    placeholder: 'I can build a full app from an empty folder',
+  },
+  {
+    id: 'built',
+    label: 'Built',
+    plural: 'Built',
+    icon: Rocket,
+    prompt: 'What did you build or ship?',
+    placeholder: 'Shipped a working PWA in one night',
+  },
+  {
+    id: 'overcame',
+    label: 'Got through',
+    plural: 'Got through',
+    icon: Mountain,
+    prompt: 'What hard thing did you get through?',
+    placeholder: 'Learned networking with nobody teaching me',
+  },
+]
+
+export const kindMeta = (id) => EVIDENCE_KINDS.find((k) => k.id === id) ?? EVIDENCE_KINDS[0]

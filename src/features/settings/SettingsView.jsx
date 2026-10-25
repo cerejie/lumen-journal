@@ -87,7 +87,7 @@ export default function SettingsView({ settings, setSettings, exportData, import
         <Group>
           {install.installed ? (
             <p className={row}>
-              <Smartphone className="size-4 text-zinc-400" /> Installed on this device
+              <Smartphone className="size-4 text-zinc-500 dark:text-zinc-400" /> Installed on this device
             </p>
           ) : install.canInstall ? (
             <button type="button" className={cx(row, 'font-semibold', accent.text)} onClick={install.promptInstall}>
@@ -109,10 +109,10 @@ export default function SettingsView({ settings, setSettings, exportData, import
         <GroupLabel>Your data</GroupLabel>
         <Group>
           <button type="button" className={row} onClick={onExport}>
-            <Download className="size-4 text-zinc-400" /> Export backup
+            <Download className="size-4 text-zinc-500 dark:text-zinc-400" /> Export backup
           </button>
           <button type="button" className={row} onClick={() => fileRef.current?.click()}>
-            <Upload className="size-4 text-zinc-400" /> Import backup
+            <Upload className="size-4 text-zinc-500 dark:text-zinc-400" /> Import backup
           </button>
           <button
             type="button"
@@ -134,9 +134,6 @@ export default function SettingsView({ settings, setSettings, exportData, import
         <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={onImport} />
       </div>
 
-      <p className="px-4 text-center text-[13px] leading-relaxed text-zinc-500 dark:text-zinc-400">
-        No accounts, no streaks, no tracking. Missed days don't exist here, only the times you showed up.
-      </p>
     </div>
   )
 }

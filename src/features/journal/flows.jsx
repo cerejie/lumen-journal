@@ -202,13 +202,16 @@ export function buildFlows({ name }) {
           chips: ['I got out of bed', 'I ate something', 'I rested', 'I talked to someone'],
           skippable: true,
           skipLabel: "Can't think of one",
+          onAnswer: (v, ctx) => {
+            if (v) ctx.addEvidence({ kind: 'win', text: v })
+          },
         },
         {
           id: 'dump',
           type: 'text',
           multiline: true,
           prompt: (a) =>
-            `${a.win ? 'That counts. 💜' : 'Getting through the day is a win. 💜'}\nAnything rattling around? Dump it here — no order, no grammar.`,
+            `${a.win ? 'Saved to your proof. 💜' : 'Getting through the day counts. 💜'}\nAnything rattling around? Dump it here — no order, no grammar.`,
           placeholder: 'One thought per line…',
           skippable: true,
           skipLabel: 'Nothing right now',
